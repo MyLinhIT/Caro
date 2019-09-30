@@ -44,6 +44,8 @@ body {
 .game-info {
   min-height: 100px;
   text-align: center;
+  max-height: 550px;
+  overflow-y: auto;
 }
 
 .status {
