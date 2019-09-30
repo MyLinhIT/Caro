@@ -1,6 +1,5 @@
 import React from 'react';
 import Square from '../Square/index';
-import { thisExpression } from '@babel/types';
 export default class Board extends React.Component {
     renderSquare(i) {
         return (
@@ -15,7 +14,7 @@ export default class Board extends React.Component {
     render() {
         let boards = [];
         for (let i = 0; i < 20; i++) {
-            boards.push(<div className="board-row">
+            boards.push(<div className="board-row" key={i + i * 20}>
                 {this.renderSquare(0 + 20 * i)}
                 {this.renderSquare(1 + 20 * i)}
                 {this.renderSquare(2 + 20 * i)}

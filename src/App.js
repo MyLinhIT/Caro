@@ -84,7 +84,7 @@ export default class App extends React.Component {
         'Go to move ' + move :
         'Go to game start';
       return (
-        <li>
+        <li key={move}>
           <button onClick={() => this.jumpTo(move)} className={this.state.stepNumber === move ? "active" : ""}>{desc}</button>
         </li>
       );
@@ -163,7 +163,9 @@ function calculateASC(i, squares, type) {
 
 function calculateBetween(i, squares, type) {
   let number = 1;
-  if (squares[i] === null || squares[i] !== squares[i - type] && squares[i] !== squares[i + type]) {
+  /*eslint no-mixed-operators: "off"*/
+
+  if ((squares[i] === null) || (squares[i] !== squares[i - type]) && (squares[i] !== squares[i + type])) {
     return null;
   }
   let min, max = null;
