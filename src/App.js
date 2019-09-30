@@ -1,26 +1,272 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Board from './component/Board/index';
+import * as Type from "./contant/index";
+import sortASC from "./asset/alphabetical-order.svg";
+import sortDESC from "./asset/sort-alphabetically-down-from-z-to-a.svg";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      history: [{
+        squares: Array(400).fill(null)
+      }],
+      xIsNext: true,
+      indexCheck: -1,
+      stepNumber: 0,
+      win: false,
+      moveMax: 0,
+      isSort: true,
+    };
+  }
+  handleClick(i) {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);;
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();
+    if (calculateWinner(this.state.indexCheck, (squares || squares[i]))) {
+      if (checkBlock(this.state.indexCheck, (squares || squares[i]))) {
+        return;
+      };
+    }
+    if (squares[i] === null) {
+      squares[i] = this.state.xIsNext ? 'X' : 'O';
+      this.setState({
+        history: history.concat([{
+          squares: squares
+        }]),
+        xIsNext: !this.state.xIsNext,
+        indexCheck: i,
+        stepNumber: history.length
+      });
+    }
+
+  }
+  handleClickReset() {
+    this.setState({
+      history: [{
+        squares: Array(400).fill(null)
+      }],
+      xIsNext: true,
+      indexCheck: -1,
+      stepNumber: 0,
+      isSort: true,
+    });
+    const cls = document.getElementsByClassName('square');
+    Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
+  }
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0,
+    });
+    const cls = document.getElementsByClassName('square');
+    Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
+  }
+  handleSort() {
+    this.setState({
+      isSort: !this.state.isSort
+    })
+  }
+  render() {
+    const history = this.state.history;
+    const current = history[this.state.stepNumber];
+    const squares = current.squares;
+    const i = this.state.indexCheck;
+    const winner = calculateWinner(i, squares);
+    let nonBlock = null;
+
+    if (winner) {
+      nonBlock = checkBlock(i, squares);
+    }
+    const moves = history.map((step, move) => {
+      const desc = move ?
+        'Go to move ' + move :
+        'Go to game start';
+      return (
+        <li>
+          <button onClick={() => this.jumpTo(move)} className={this.state.stepNumber === move ? "active" : ""}>{desc}</button>
+        </li>
+      );
+    });
+    const movesSort = this.state.isSort ? moves : moves.sort((a, b) => a - b).reverse();
+    let status;
+    if (nonBlock) {
+      status = 'Winner: ' + winner;
+      styleWinner(i, squares);
+    } else {
+      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    }
+
+    return (
+      <div className="game">
+        <div className="status">{status}</div>
+        <div className="play-again" >
+          <button onClick={() => this.handleClickReset()}>
+            Play again
+            </button>
+        </div>
+        <div className="sort-icon">
+          <button className="icon" onClick={() => this.handleSort()}>
+            <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
+          </button>
+        </div>
+        <div className="game-info">
+          <div className="move">
+            <ol>{movesSort}</ol>
+          </div>
+        </div>
+
+        <div className="game-board">
+          <Board
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+          />
+        </div>
+
+      </div>
+    );
+  }
 }
 
-export default App;
+function calculateDESC(i, squares, type) {
+  let number = 1;
+  if (squares[i] === null) {
+    return null;
+  }
+
+  for (let index = i, count = 1; count < 5; count++ , index += type) {
+    if (squares[i] !== squares[index + type])
+      return null;
+    else {
+      number++;
+    }
+
+  }
+  return number === 5 ? squares[i] : null;
+}
+
+function calculateASC(i, squares, type) {
+  let number = 1;
+  if (squares[i] === null) {
+    return null;
+  }
+  for (let index = i, count = 1; count < 5; count++ , index -= type) {
+    if (squares[i] !== squares[index - type])
+      return null;
+    else
+      number++;
+  }
+
+  return number === 5 ? squares[i] : null;
+}
+
+function calculateBetween(i, squares, type) {
+  let number = 1;
+  if (squares[i] === null || squares[i] !== squares[i - type] && squares[i] !== squares[i + type]) {
+    return null;
+  }
+  let min, max = null;
+  for (let index = i + type, count = 1; count < 5; count++ , index += type) {
+    if (squares[i] === squares[index]) {
+      max = index;
+      number++;
+    }
+  }
+  for (let index = i - type, count = 1; count < 5; count++ , index -= type) {
+    if (index >= 0 && squares[i] === squares[index]) {
+      min = index;
+      number++;
+    }
+    if (index < 0) {
+      break;
+    }
+  }
+
+  for (min; min <= max; min += type) {
+    if (squares[min] === null || squares[min] !== squares[i])
+      return null;
+  }
+
+  return number >= 5 ? squares[i] : null;
+}
+
+function isBlock(i, squares, type) {
+  let min, max = null;
+  for (let index = type; index < 5 * type; index += type) {
+    if (squares[i + index] !== null && squares[i] !== squares[index + i]) {
+      max = index + i;
+    }
+  }
+  for (let index = type, count = 0; count < 5; count++ , index -= type) {
+    if (squares[i - index] !== null && squares[i] !== squares[i - index])
+      min = i - index;
+  }
+  return min && max ? null : squares[i];
+}
+
+function checkBlock(i, squares) {
+  const type = checkType(i, squares);
+  return isBlock(i, squares, type);
+}
+
+function checkType(i, squares) {
+  if (squares[i] === squares[i + Type.ROW] || squares[i] === squares[i - Type.ROW]) {
+    return Type.ROW;
+  }
+  if (squares[i] === squares[i + Type.COLUMN] || squares[i] === squares[i - Type.COLUMN]) {
+    return Type.COLUMN;
+  }
+  if (squares[i] === squares[i + Type.PRIMARY_DIAGONAL] || squares[i] === squares[i - Type.PRIMARY_DIAGONAL]) {
+    return Type.PRIMARY_DIAGONAL;
+  }
+  if (squares[i] === squares[i + Type.SECONDARY_DIAGONAL] || squares[i] === squares[i - Type.SECONDARY_DIAGONAL]) {
+    return Type.SECONDARY_DIAGONAL;
+  }
+  return null;
+}
+
+function calculateWinner(i, squares) {
+  if (squares[i] === squares[i + Type.ROW]) {
+    return calculateDESC(i, squares, Type.ROW) || calculateBetween(i, squares, Type.ROW)
+  }
+  else if (squares[i] === squares[i - Type.ROW]) {
+    return calculateASC(i, squares, Type.ROW) || calculateBetween(i, squares, Type.ROW);
+  }
+  if (squares[i] === squares[i + Type.COLUMN]) {
+    return calculateDESC(i, squares, Type.COLUMN) || calculateBetween(i, squares, Type.COLUMN)
+  }
+  else if (squares[i] === squares[i - Type.COLUMN]) {
+    return calculateASC(i, squares, Type.COLUMN) || calculateBetween(i, squares, Type.COLUMN)
+  }
+  if (squares[i] === squares[i + Type.PRIMARY_DIAGONAL]) {
+    return calculateDESC(i, squares, Type.PRIMARY_DIAGONAL) || calculateBetween(i, squares, Type.PRIMARY_DIAGONAL)
+  }
+  else if (squares[i] === squares[i - Type.PRIMARY_DIAGONAL]) {
+    return calculateASC(i, squares, Type.PRIMARY_DIAGONAL) || calculateBetween(i, squares, Type.PRIMARY_DIAGONAL)
+  }
+  if (squares[i] === squares[i + Type.SECONDARY_DIAGONAL]) {
+    return calculateDESC(i, squares, Type.SECONDARY_DIAGONAL) || calculateBetween(i, squares, Type.SECONDARY_DIAGONAL)
+  }
+  else if (squares[i] === squares[i - Type.SECONDARY_DIAGONAL]) {
+    return calculateASC(i, squares, Type.SECONDARY_DIAGONAL) || calculateBetween(i, squares, Type.SECONDARY_DIAGONAL)
+  }
+  return null;
+}
+
+function styleWinner(i, squares) {
+  const type = checkType(i, squares);
+  for (let index = i, count = 0; count < 5; count++ , index += type) {
+    if (squares[index] !== null) {
+      document.getElementById(index).style.color = "yellow";
+    }
+  }
+  for (let index = i, count = 0; count < 5; count++ , index -= type) {
+    if (index >= 0 && squares[index] !== null) {
+      document.getElementById(index).style.color = "yellow";
+    }
+    if (index < 0) {
+      break;
+    }
+  }
+}

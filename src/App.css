@@ -1,33 +1,113 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
-}
-
-.App-header {
+body {
   background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  overflow-x: visible;
 }
 
-.App-link {
-  color: #61dafb;
+.game {
+  background-color: #282c34;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  min-width: 630px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media only screen and (max-width: 600px) {
+  .game {
+    margin-left: 250px;
   }
-  to {
-    transform: rotate(360deg);
-  }
+}
+
+.game-info {
+  min-height: 100px;
+  text-align: center;
+}
+
+.status {
+  margin-top: 30px;
+}
+
+.play-again button {
+  margin-top: 20px;
+  height: 30px;
+  font-size: calc(6px + 2vmin);
+  background: transparent;
+  border: 1px solid #ffffff;
+  color: white;
+  opacity: .8;
+  transition: .2s;
+  outline: none;
+}
+
+.play-again button:hover {
+  opacity: 1;
+  background: #666666;
+  outline: none;
+}
+
+.game-info .move button {
+  height: 20px;
+  font-size: calc(1px + 2vmin);
+  background: transparent;
+  border: 1px solid #ffffff;
+  color: white;
+  opacity: .8;
+  transition: .2s;
+}
+
+.game-info .move button:hover,
+.game-info .move .active {
+  opacity: 1;
+  background: #666666;
+  outline: none;
+}
+
+.game-info .move li {
+  font-size: calc(1px + 2vmin);
+  margin: 5px 15px;
+}
+
+.game-info .move li button {
+  min-width: calc(125px + 2vmin);
+}
+
+.game-info .move ol {
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 630px;
+  justify-content: center;
+}
+
+.sort-icon {
+  text-align: right;
+  min-width: 600px;
+}
+
+.sort-icon .icon,
+.sort-icon .icon:hover {
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.sort-icon .icon img {
+  height: 30px;
+  width: 20px;
+}
+
+.sort-icon .icon img:hover {
+  cursor: pointer;
 }
