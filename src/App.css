@@ -2,26 +2,38 @@ body {
   background-color: #282c34;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
   overflow-x: visible;
+  text-align: center;
 }
 
 .game {
   background-color: #282c34;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+
+}
+
+.game-body {
+  display: flex;
+  justify-content: center;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
   flex-wrap: nowrap;
   overflow-x: auto;
+  overflow-y: hidden;
   white-space: nowrap;
   min-width: 630px;
+  align-items: center;
+  justify-content: center;
 }
+
 
 @media only screen and (max-width: 600px) {
   .game {
@@ -36,6 +48,12 @@ body {
 
 .status {
   margin-top: 30px;
+  min-height: 20px;
+}
+
+.play-again {
+  margin-bottom: 30px;
+  min-height: 20px;
 }
 
 .play-again button {
@@ -87,13 +105,17 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  max-width: 630px;
+  max-width: 100px;
   justify-content: center;
+}
+
+.game-history {
+  margin-top: 130px;
 }
 
 .sort-icon {
   text-align: right;
-  min-width: 600px;
+  min-width: 180px;
 }
 
 .sort-icon .icon,

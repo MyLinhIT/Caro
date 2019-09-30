@@ -89,7 +89,7 @@ export default class App extends React.Component {
         </li>
       );
     });
-    const movesSort = this.state.isSort ? moves : moves.sort((a, b) => a - b).reverse();
+    const movesSort = this.state.isSort ? moves : moves.reverse();
     let status;
     if (nonBlock) {
       status = 'Winner: ' + winner;
@@ -100,30 +100,32 @@ export default class App extends React.Component {
 
     return (
       <div className="game">
-        <div className="status">{status}</div>
-        <div className="play-again" >
-          <button onClick={() => this.handleClickReset()}>
-            Play again
+        <div className="game-body">
+          <div className="game-board">
+            <div className="status">{status}</div>
+            <div className="play-again" >
+              <button onClick={() => this.handleClickReset()}>
+                Play again
             </button>
-        </div>
-        <div className="sort-icon">
-          <button className="icon" onClick={() => this.handleSort()}>
-            <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
-          </button>
-        </div>
-        <div className="game-info">
-          <div className="move">
-            <ol>{movesSort}</ol>
+            </div>
+            <Board
+              squares={current.squares}
+              onClick={(i) => this.handleClick(i)}
+            />
+          </div>
+          <div className="game-history">
+            <div className="sort-icon">
+              <button className="icon" onClick={() => this.handleSort()}>
+                <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
+              </button>
+            </div>
+            <div className="game-info">
+              <div className="move">
+                <ol>{movesSort}</ol>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            onClick={(i) => this.handleClick(i)}
-          />
-        </div>
-
       </div>
     );
   }
