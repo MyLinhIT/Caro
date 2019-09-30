@@ -25,7 +25,8 @@
             "absolute-first"
         ],
         "import/newline-after-import": "error",
-        "no-mixed-operators": "off"
+        "no-mixed-operators": "off",
+        "no-unused-expressions": "off"
     },
     "globals": {
         "window": true,
