@@ -1,17 +1,17 @@
 import React from 'react';
-import './App.css';
-import Board from './component/Board/index';
-import * as Type from "./contant/index";
-import sortASC from "./asset/alphabetical-order.svg";
-import sortDESC from "./asset/sort-alphabetically-down-from-z-to-a.svg";
+import './style.css';
+import Board from '../../component/Board/index';
+import * as Type from "../../contant/index";
+import sortASC from "../../asset/alphabetical-order.svg";
+import sortDESC from "../../asset/sort-alphabetically-down-from-z-to-a.svg";
+import { connect } from 'react-redux';
+import { AddItem, Reset, ModifiedHistory } from '../../action/index';
 
-export default class App extends React.Component {
+class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      history: [{
-        squares: Array(400).fill(null)
-      }],
+      history: this.props.history,
       xIsNext: true,
       indexCheck: -1,
       stepNumber: 0,
@@ -20,8 +20,13 @@ export default class App extends React.Component {
       isSort: true,
     };
   }
+  static getDerivedStateFromProps(props, state) {
+    return {
+      history: props.history
+    }
+  }
   handleClick(i) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);;
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
     if (calculateWinner(this.state.indexCheck, (squares || squares[i]))) {
@@ -29,12 +34,11 @@ export default class App extends React.Component {
         return;
       };
     }
+    this.props.modifiedHistory(history);
     if (squares[i] === null) {
       squares[i] = this.state.xIsNext ? 'X' : 'O';
+      this.props.onClick(squares);
       this.setState({
-        history: history.concat([{
-          squares: squares
-        }]),
         xIsNext: !this.state.xIsNext,
         indexCheck: i,
         stepNumber: history.length
@@ -43,10 +47,8 @@ export default class App extends React.Component {
 
   }
   handleClickReset() {
+    this.props.reset();
     this.setState({
-      history: [{
-        squares: Array(400).fill(null)
-      }],
       xIsNext: true,
       indexCheck: -1,
       stepNumber: 0,
@@ -130,6 +132,19 @@ export default class App extends React.Component {
     );
   }
 }
+
+
+const mapStateToProps = (state) => ({
+  history: state.game.history
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  onClick: (data) => dispatch(AddItem(data)),
+  reset: () => dispatch(Reset()),
+  modifiedHistory: (history) => dispatch(ModifiedHistory(history))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Game)
 
 function calculateDESC(i, squares, type) {
   let number = 1;
