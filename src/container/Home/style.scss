@@ -155,15 +155,41 @@
 }
 
 @media screen and (max-width: 768px) {
-    .section {
-        flex-direction: column-reverse !important;
-        overflow-y: auto;
+    .home {
+        h1 {
+            font-size: 60px;
+            margin-top: 0;
+        }
+
+        .section {
+            flex-direction: column-reverse !important;
+
+            &__content {
+                .timeline {
+                    margin-left: 40px;
+                    margin-top: 40px;
+                }
+
+                .group-button {
+                    margin-top: 0;
+                    margin-left: 40px;
+                }
+            }
+
+            &__image {
+                width: auto;
+                height: 350px;
+                margin-right: 0;
+            }
+        }
+
+
     }
 
-    .home {
-        .section__image {
-            width: 400px;
-            height: 400px;
-        }
+
+
+    &__image {
+        width: auto;
+        height: auto;
     }
 }
