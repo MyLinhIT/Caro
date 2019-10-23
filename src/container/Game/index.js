@@ -1,12 +1,11 @@
 import React from 'react';
-import './style.css';
+import './style.scss';
 import Board from '../../component/Board/index';
 import * as Type from "../../contant/index";
 import sortASC from "../../asset/alphabetical-order.svg";
 import sortDESC from "../../asset/sort-alphabetically-down-from-z-to-a.svg";
 import { connect } from 'react-redux';
 import { AddItem, Reset, ModifiedHistory } from '../../action/index';
-
 class Game extends React.Component {
   constructor(props) {
     super(props);
@@ -73,6 +72,7 @@ class Game extends React.Component {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
+    console.log(current.squares);
     const squares = current.squares;
     const i = this.state.indexCheck;
     const winner = calculateWinner(i, squares);

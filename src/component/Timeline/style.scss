@@ -1,0 +1,12 @@
+.timeline {
+    text-align: left !important;
+
+    .ant-steps-item {
+        height: 100px;
+
+        .ant-steps-item-title,
+        .ant-steps-item-description {
+            color: #ffffff !important;
+        }
+    }
+}

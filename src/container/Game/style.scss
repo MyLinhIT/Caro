@@ -1,5 +1,4 @@
 body {
-  background-color: #282c34;
   display: flex;
   flex-direction: column;
   font-size: calc(10px + 2vmin);
@@ -59,9 +58,9 @@ body {
 }
 
 .play-again button {
-  margin-top: 20px;
-  height: 30px;
-  font-size: calc(6px + 2vmin);
+  margin-top: 10px;
+  height: 50px;
+  font-size: calc(4px + 2vmin);
   background: transparent;
   border: 1px solid #ffffff;
   color: white;
@@ -77,7 +76,7 @@ body {
 }
 
 .game-info .move button {
-  height: 20px;
+  height: 40px;
   font-size: calc(1px + 2vmin);
   background: transparent;
   border: 1px solid #ffffff;

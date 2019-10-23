@@ -1,0 +1,47 @@
+@import '~antd/dist/antd.css';
+
+.login-page {
+    height: 100vh;
+    border: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    margin-right: 0;
+    background-image: url("../../asset/background_login_page.jpg");
+    background-size: cover;
+
+    .form-login {
+        margin: 10vh auto 0;
+        width: 300px;
+        text-align: center;
+
+        h3 {
+            color: #ffffff;
+            font-size: calc(40px + 2vmin);
+            font-family: 'Modak', cursive !important;
+        }
+
+        .ant-form-explain {
+            text-align: left;
+            font-weight: bold;
+            color: #f5222d;
+
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        a {
+            text-decoration: underline !important;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        a:hover {
+            font-size: 18px;
+        }
+    }
+
+
+}

@@ -1,0 +1,169 @@
+.home {
+    height: 100vh;
+    border: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    margin-right: 0;
+    background-image: url("../../asset/background_home_page.jpg");
+    background-size: cover;
+    text-align: center;
+
+    h1 {
+        color: #ffffff !important;
+        font-size: 90px;
+        font-weight: 900;
+        margin: 0;
+        margin-top: -50px;
+        font-family: 'Long Cang', cursive !important;
+    }
+
+    h3 {
+        color: #ffffff !important;
+        margin-top: -50px;
+        padding-bottom: 20px;
+    }
+
+    .section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        &__content {
+            .timeline {
+                margin: 100px 0 0 100px;
+            }
+
+            .group-button {
+                margin-top: 50px;
+                margin-left: 100px;
+                text-align: left;
+            }
+        }
+
+        &__image {
+            margin-right: 50px;
+            display: flex;
+            flex-direction: row;
+            padding-left: 50px;
+            width: 500px;
+            height: 450px;
+            position: relative;
+            background-image: url("../../asset/people.svg");
+            background-size: cover;
+
+            div {
+                font-size: calc(100px + 2vmin);
+                color: #ffffff;
+                font-family: 'Long Cang', cursive !important;
+                animation-duration: 4s;
+                animation-iteration-count: infinite;
+                position: absolute;
+            }
+
+            .XO1 {
+                left: 0;
+                top: 0;
+                animation-name: xo1;
+            }
+
+            .XO2 {
+                right: 0;
+                top: 0;
+                animation-name: xo2;
+            }
+
+            @keyframes xo1 {
+                0% {
+                    left: 125px;
+                    top: 0;
+                    transform: rotateY(0deg)
+                }
+
+                20% {
+                    left: 175px;
+                    top: -10px;
+                    transform: rotateY(72deg)
+                }
+
+
+                40% {
+                    left: 225px;
+                    top: -20px;
+                    transform: rotateY(144deg)
+                }
+
+                60% {
+                    left: 275px;
+                    top: -20px;
+                    transform: rotateY(216deg)
+                }
+
+                80% {
+                    left: 325px;
+                    top: -10px;
+                    transform: rotateY(288deg)
+                }
+
+                100% {
+                    left: 375px;
+                    top: 0;
+                    transform: rotateY(360deg)
+                }
+            }
+
+            @keyframes xo2 {
+                0% {
+                    right: 125px;
+                    top: 0;
+                    transform: rotateY(0deg)
+                }
+
+                20% {
+                    right: 175px;
+                    top: -10px;
+                    transform: rotateY(72deg)
+                }
+
+
+                40% {
+                    right: 225px;
+                    top: -20px;
+                    transform: rotateY(144deg)
+                }
+
+                60% {
+                    right: 275px;
+                    top: -20px;
+                    transform: rotateY(216deg)
+                }
+
+                80% {
+                    right: 325px;
+                    top: -10px;
+                    transform: rotateY(288deg)
+                }
+
+                100% {
+                    right: 375px;
+                    top: 0;
+                    transform: rotateY(360deg)
+                }
+            }
+
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .section {
+        flex-direction: column-reverse !important;
+        overflow-y: auto;
+    }
+
+    .home {
+        .section__image {
+            width: 400px;
+            height: 400px;
+        }
+    }
+}

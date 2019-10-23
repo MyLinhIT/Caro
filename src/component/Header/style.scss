@@ -1,0 +1,25 @@
+@import '~antd/dist/antd.css';
+
+.header {
+    &__logo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: none !important;
+
+        &--title {
+            color: #ffffff;
+            font-size: calc(40px + 2vmin);
+            font-family: 'Long Cang', cursive !important;
+        }
+    }
+
+    div {
+        padding: 0 50px;
+        height: 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    }
+}

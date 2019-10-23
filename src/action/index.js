@@ -1,4 +1,6 @@
-import { ADD_ITEM, RESET, MODIFIED_HISTORY } from '../contant/index'
+import {
+    ADD_ITEM, RESET, MODIFIED_HISTORY,
+} from '../contant/index'
 
 export const AddItem = (data) => {
     return {
@@ -19,3 +21,4 @@ export const ModifiedHistory = (history) => {
         history
     }
 }
+
