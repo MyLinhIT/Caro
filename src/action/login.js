@@ -2,7 +2,8 @@ import {
     LOGIN_SUCESS,
     LOGIN_PENDING,
     LOGIN_FAILURE,
-    LOGOUT
+    LOGOUT,
+    LOCAL_API,
 } from '../contant/index'
 import axios from 'axios';
 import { message } from 'antd';
@@ -13,7 +14,7 @@ export const login = ({ email, password }) => {
         dispatch(LoginPending());
         setTimeout(() => {
             axios
-                .post('https://caro-1612334-api.herokuapp.com/user/login', {
+                .post(`${LOCAL_API}/user/login`, {
                     email,
                     password
                 })
@@ -31,6 +32,16 @@ export const login = ({ email, password }) => {
     }
 }
 
+export const loginSocial = (data) => {
+    console.log('user.token', data);
+    return dispatch => {
+        localStorage.setItem('jwt_token', data.user.token);
+        dispatch(LoginSucess(data));
+        message.success("Chúc mừng, bạn đã đăng nhập thành công.")
+        history.push('/home');
+    }
+}
+
 export const logout = () => {
     return dispatch => {
         dispatch(Logout());
@@ -43,7 +54,6 @@ const LoginPending = () => {
         type: LOGIN_PENDING
     }
 }
-
 const LoginSucess = (data) => {
     return {
         type: LOGIN_SUCESS,

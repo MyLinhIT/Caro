@@ -5,6 +5,9 @@ import Header from '../../component/Header';
 import { connect } from 'react-redux';
 import * as LoginAction from '../../action/login';
 
+
+import { LOCAL_API } from '../../contant'
+
 function hasErrors(fieldsError) {
     return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
@@ -25,8 +28,19 @@ class Login extends React.Component {
                 this.props.login(values)
             }
         });
-
     };
+
+    handleLoginFacebook = e => {
+        e.preventDefault();
+        window.location.replace(`${LOCAL_API}/auth/facebook`);
+    }
+
+    handleLoginGoogle = e => {
+        e.preventDefault();
+        window.location.replace(`${LOCAL_API}/auth/google`);
+    }
+
+
     componentWillReceiveProps = (nextProps) => {
         if (nextProps.state !== this.state) {
             this.setState({
@@ -46,6 +60,16 @@ class Login extends React.Component {
                 <Form layout="vertical" onSubmit={this.handleSubmit} className="form-login">
                     <Avatar size={128} icon="user" style={{ backgroundColor: '#262626' }} />
                     <h3>Đăng nhập</h3>
+                    <Form.Item className="fb-gg w-100" style={{ display: "flex", flexDirection: "row" }}>
+                        <Button type="primary" onClick={this.handleLoginFacebook}>
+                            <Icon type="facebook" theme="filled" />
+                            Facebook
+                        </Button>
+                        <Button type="danger" onClick={this.handleLoginGoogle}>
+                            <Icon type="google-square" theme="filled" />
+                            Google
+                        </Button>
+                    </Form.Item>
                     <Form.Item validateStatus={emailError ? 'error' : ''} help={emailError || ''}>
                         {getFieldDecorator('email', {
                             rules: [
@@ -60,7 +84,7 @@ class Login extends React.Component {
                             ],
                         })(
                             <Input
-                                prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                prefix={<Icon type="mail" style={{ color: 'rgba(0,0,0,.25)' }} />}
                                 placeholder="Email"
                             />,
                         )}
@@ -84,8 +108,8 @@ class Login extends React.Component {
                     <Form.Item >
                         <p style={{ color: "#fff" }}>Bạn không có tài khoản? <a href="/register">Đăng ký ngay</a></p>
                     </Form.Item>
-                </Form>
-            </div>
+                </Form >
+            </div >
         );
     }
 }
@@ -94,7 +118,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    login: (value) => dispatch(LoginAction.login(value))
+    login: (value) => dispatch(LoginAction.login(value)),
 });
 
 const WapperFormLogin = (Form.create({ name: 'horizontal_login' })(Login));

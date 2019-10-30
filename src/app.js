@@ -3,6 +3,7 @@ import React from 'react';
 import './index.css';
 import Login from './container/LoginPage';
 import Register from './container/RegisterPage';
+import AfterLogin from './container/AfterLogin';
 import PageNotFound from './component/404Page';
 import Game from './container/Game'
 import Home from './container/Home';
@@ -20,6 +21,9 @@ const App = (props) => {
             </Route>
             <Route path="/register">
                 <Register />
+            </Route>
+            <Route path="/after-login">
+                <AfterLogin />
             </Route>
             <Route path="/home">
                 {props.isLoggin ? <Home /> : <Redirect to="/login" />}

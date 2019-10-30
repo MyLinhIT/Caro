@@ -10,7 +10,7 @@
     background-size: cover;
 
     .form-login {
-        margin: 10vh auto 0;
+        margin: 5vh auto 0;
         width: 300px;
         text-align: center;
 
@@ -40,6 +40,17 @@
 
         a:hover {
             font-size: 18px;
+        }
+
+        .fb-gg {
+            button {
+                width: 50%;
+            }
+
+        }
+
+        .ant-form-item-control-wrapper {
+            width: 100%;
         }
     }
 

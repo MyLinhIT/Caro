@@ -20,6 +20,7 @@ const loginReducer = (state = initialState, action) => {
                 pending: true
             }
         case LOGIN_SUCESS:
+            console.log(action.data);
             return {
                 ...state,
                 pending: false,

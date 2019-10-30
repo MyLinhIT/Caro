@@ -19,7 +19,6 @@ class Register extends React.Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                console.log(values);
                 this.props.register({
                     email: values.email,
                     password: values.password,
@@ -50,7 +49,7 @@ class Register extends React.Component {
             <div className="register-page">
                 <Header icon="user" text="Đăng nhập" link="/login" />
                 <Form layout="vertical" onSubmit={this.handleSubmit} className="form-register">
-                    <Avatar size={128} icon="user" style={{ backgroundColor: '#262626' }} />
+                    <Avatar size={128} icon="mail" style={{ backgroundColor: '#262626' }} />
                     <h3>Đăng ký</h3>
                     <Form.Item validateStatus={displayNameError ? 'error' : ''} help={displayNameError || ''}>
                         {getFieldDecorator('displayName', {

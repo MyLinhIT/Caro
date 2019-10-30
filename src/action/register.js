@@ -2,6 +2,7 @@ import {
     REGISTER_SUCESS,
     REGISTER_PENDING,
     REGISTER_FAILURE,
+    LOCAL_API
 } from '../contant/index'
 import axios from 'axios';
 import { message } from 'antd';
@@ -12,7 +13,7 @@ export const register = ({ email, password, displayName }) => {
         dispatch(RegisterPending());
         setTimeout(() => {
             axios
-                .post('https://caro-1612334-api.herokuapp.com/user/register', {
+                .post(`${LOCAL_API}/user/register`, {
                     email,
                     password,
                     displayName
