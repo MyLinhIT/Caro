@@ -2,9 +2,11 @@ import { combineReducers } from 'redux'
 import game from './game'
 import login from './login'
 import register from './register'
+import getInfomation from './infomation'
 
 export default combineReducers({
     game,
     login,
-    register
+    register,
+    getInfomation
 })

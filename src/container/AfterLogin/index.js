@@ -5,7 +5,7 @@ import * as LoginAction from '../../action/login';
 
 class AfterLogin extends Component {
 
-    componentWillMount = () => {
+    componentDidMount = () => {
         const token = new URL(window.location.href).searchParams.get('token');
         if (token) {
             this.props.loginSocial(JSON.parse(token));

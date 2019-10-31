@@ -12,6 +12,10 @@ const Home = (props) => {
         <div className="home">
             <Header />
             <h1>Caro Việt Nam</h1>
+            <Button type="primary" onClick={() => history.push("/me")}>
+                Quản lý tài khoản
+                <Icon type="play-circle" />
+            </Button>
             <div className="section">
                 <div className="section__content">
                     <Timeline text={props.account.user.displayName} />

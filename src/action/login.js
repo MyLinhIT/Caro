@@ -33,7 +33,6 @@ export const login = ({ email, password }) => {
 }
 
 export const loginSocial = (data) => {
-    console.log('user.token', data);
     return dispatch => {
         localStorage.setItem('jwt_token', data.user.token);
         dispatch(LoginSucess(data));

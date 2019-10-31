@@ -1,0 +1,38 @@
+.infomation-page {
+    height: 100vh;
+    border: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    margin-right: 0;
+    background-size: cover;
+    background-image: url("../../asset/background_login_page.jpg");
+
+    h1 {
+        margin-top: 40px;
+        color: #ffffff;
+    }
+
+    .form-infomation {
+        margin: 5vh auto 0;
+        width: 300px;
+
+        label {
+            color: #ffffff;
+        }
+
+        .ant-form-explain {
+            text-align: left;
+            font-weight: bold;
+            color: #f5222d;
+
+        }
+
+        .ant-form-item-control-wrapper {
+            width: 100%;
+        }
+    }
+}
+
+.ant-modal {
+    width: 300px !important;
+}
