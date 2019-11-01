@@ -17,13 +17,16 @@ export const getInfomation = () => {
     }
 }
 
-export const updateInfomation = ({ email, displayName, _id }) => {
+export const updateInfomation = ({ email, displayName, _id, birthday, gender, avatar }) => {
     return dispatch => {
         dispatch(GetInfomationPending());
         axios
             .put(`${LOCAL_API}/update?_id=${_id}`, {
                 email,
-                displayName
+                displayName,
+                birthday,
+                gender,
+                avatar
             })
             .then(res => {
                 localStorage.setItem('jwt_token', res.data.user.token);

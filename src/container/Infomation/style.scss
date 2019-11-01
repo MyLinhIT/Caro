@@ -1,5 +1,4 @@
 .infomation-page {
-    height: 100vh;
     border: none;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -35,4 +34,8 @@
 
 .ant-modal {
     width: 300px !important;
+}
+
+.ant-calendar-picker {
+    width: 100%;
 }
