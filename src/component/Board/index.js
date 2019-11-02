@@ -7,6 +7,7 @@ export default class Board extends React.Component {
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
                 id={i}
+                disable={this.props.disable}
             />
         );
     }

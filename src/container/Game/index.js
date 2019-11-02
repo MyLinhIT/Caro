@@ -6,6 +6,7 @@ import sortASC from "../../asset/alphabetical-order.svg";
 import sortDESC from "../../asset/sort-alphabetically-down-from-z-to-a.svg";
 import { connect } from 'react-redux';
 import { AddItem, Reset, ModifiedHistory } from '../../action/index';
+
 class Game extends React.Component {
   constructor(props) {
     super(props);
@@ -24,7 +25,7 @@ class Game extends React.Component {
       history: props.history
     }
   }
-  handleClick(i) {
+  handleClick = (i) => {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
@@ -35,20 +36,53 @@ class Game extends React.Component {
     }
     this.props.modifiedHistory(history);
     if (squares[i] === null) {
-      squares[i] = this.state.xIsNext ? 'X' : 'O';
+
+      squares[i] = 'X';
       this.props.onClick(squares);
+
       this.setState({
-        xIsNext: !this.state.xIsNext,
+        xIsNext: false,
         indexCheck: i,
         stepNumber: history.length
-      });
+      }, () => {
+        setTimeout(() => {
+          this.handleBotPlay(i)
+        }, 1000)
+      })
+    }
+  }
+
+  handleBotPlay = (i) => {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();
+    if (calculateWinner(this.state.indexCheck, (squares || squares[i]))) {
+      if (checkBlock(this.state.indexCheck, (squares || squares[i]))) {
+        return;
+      };
+    }
+    this.props.modifiedHistory(history);
+    let index = -1;
+    while (true) {
+      index = Math.floor(Math.random() * 400);
+      if (squares[index] === null)
+        break;
     }
 
-  }
-  handleClickReset() {
-    this.props.reset();
+    squares[index] = 'O';
+    this.props.onClick(squares);
+
     this.setState({
       xIsNext: true,
+      indexCheck: index,
+      stepNumber: history.length
+    });
+  }
+
+  handleClickReset = () => {
+    this.props.reset();
+    this.setState({
+      // xIsNext: true,
       indexCheck: -1,
       stepNumber: 0,
       isSort: true,
@@ -56,7 +90,8 @@ class Game extends React.Component {
     const cls = document.getElementsByClassName('square');
     Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
   }
-  jumpTo(step) {
+
+  jumpTo = (step) => {
     this.setState({
       stepNumber: step,
       xIsNext: (step % 2) === 0,
@@ -64,15 +99,16 @@ class Game extends React.Component {
     const cls = document.getElementsByClassName('square');
     Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
   }
-  handleSort() {
+
+  handleSort = () => {
     this.setState({
       isSort: !this.state.isSort
     })
   }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    console.log(current.squares);
     const squares = current.squares;
     const i = this.state.indexCheck;
     const winner = calculateWinner(i, squares);
@@ -83,8 +119,8 @@ class Game extends React.Component {
     }
     const moves = history.map((step, move) => {
       const desc = move ?
-        'Go to move ' + move :
-        'Go to game start';
+        'Bước ' + move + ' ' + new Date().toLocaleTimeString() :
+        'Bước bắt đầu chơi';
       return (
         <li key={move}>
           <button onClick={() => this.jumpTo(move)} className={this.state.stepNumber === move ? "active" : ""}>{desc}</button>
@@ -94,29 +130,31 @@ class Game extends React.Component {
     const movesSort = this.state.isSort ? moves : moves.reverse();
     let status;
     if (nonBlock) {
-      status = 'Winner: ' + winner;
+      status = (squares[i] === 'X' ? "Bạn đã thắng" : "Máy đã thắng");
       styleWinner(i, squares);
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      status = (this.state.xIsNext ? 'Tới lượt bạn' : 'Tới lượt máy');
     }
 
     return (
       <div className="game">
         <div className="game-body">
           <div className="game-board">
-            <div className="status">{status}</div>
+            <div className="status" style={{ color: '#ffff00' }}>{status}</div>
             <div className="play-again" >
               <button onClick={() => this.handleClickReset()}>
-                Play again
+                Chơi lại
             </button>
             </div>
             <Board
               squares={current.squares}
               onClick={(i) => this.handleClick(i)}
+              disable={!this.state.xIsNext}
             />
           </div>
           <div className="game-history">
             <div className="sort-icon">
+              <span style={{ color: '#ffff00' }}>Lịch sử bước đi</span>
               <button className="icon" onClick={() => this.handleSort()}>
                 <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
               </button>

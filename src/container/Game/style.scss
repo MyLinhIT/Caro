@@ -14,123 +14,153 @@ body {
   font-size: calc(10px + 2vmin);
   color: white;
 
-}
-
-.game-body {
-  display: flex;
-  justify-content: center;
-}
-
-.game-board {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  min-width: 630px;
-  align-items: center;
-  justify-content: center;
-}
-
-
-@media only screen and (max-width: 600px) {
-  .game {
+  @media only screen and (max-width: 600px) {
     margin-left: 250px;
   }
+
+  .game-body {
+    display: flex;
+    justify-content: center;
+  }
+
+  .game-board {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    min-width: 630px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 50px;
+
+    .status {
+      margin-top: 30px;
+      min-height: 20px;
+    }
+
+    .play-again {
+      margin-bottom: 30px;
+      min-height: 20px;
+
+      button {
+        margin-top: 10px;
+        height: 40px;
+        font-size: calc(4px + 2vmin);
+        background: transparent;
+        border: 1px solid #ffffff;
+        color: white;
+        opacity: .8;
+        transition: .2s;
+        outline: none;
+
+        &:hover {
+          opacity: 1;
+          background: #666666;
+          outline: none;
+        }
+      }
+    }
+  }
+
+  .game-history {
+    margin-top: 130px;
+
+    .game-info {
+      min-height: 100px;
+      text-align: center;
+      max-height: 550px;
+      overflow-y: auto;
+      min-width: 220px;
+
+      .move button {
+        height: 40px;
+        font-size: calc(1px + 2vmin);
+        background: transparent;
+        border: 1px solid #ffffff;
+        color: white;
+        opacity: .8;
+        transition: .2s;
+
+        &:hover,
+        .active {
+          opacity: 1;
+          background: #666666;
+          outline: none;
+        }
+      }
+
+      ol {
+        text-align: center;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 180px;
+        justify-content: center;
+
+        li {
+          font-size: calc(1px + 2vmin);
+          margin: 5px 0px;
+
+          button {
+            min-width: calc(150px + 2vmin);
+          }
+        }
+      }
+
+    }
+
+    .sort-icon {
+      text-align: right;
+      min-width: 180px;
+
+      .icon {
+        background: none;
+        border: none;
+        outline: none;
+
+        img {
+          height: 30px;
+          width: 20px;
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
+
+        &:hover {
+          background: none;
+          border: none;
+          outline: none;
+        }
+      }
+    }
+  }
+
 }
 
-.game-info {
-  min-height: 100px;
-  text-align: center;
-  max-height: 550px;
-  overflow-y: auto;
+.game-info::-webkit-scrollbar {
+  border-radius: 10px;
 }
 
-.status {
-  margin-top: 30px;
-  min-height: 20px;
+.game-info::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: #F5F5F5;
 }
 
-.play-again {
-  margin-bottom: 30px;
-  min-height: 20px;
+.game-info::-webkit-scrollbar {
+  width: 12px;
+  background-color: #F5F5F5;
 }
 
-.play-again button {
-  margin-top: 10px;
-  height: 50px;
-  font-size: calc(4px + 2vmin);
-  background: transparent;
-  border: 1px solid #ffffff;
-  color: white;
-  opacity: .8;
-  transition: .2s;
-  outline: none;
+.game-info::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+  background-color: #f8cb00d3;
 }
 
-.play-again button:hover {
-  opacity: 1;
-  background: #666666;
-  outline: none;
-}
-
-.game-info .move button {
-  height: 40px;
-  font-size: calc(1px + 2vmin);
-  background: transparent;
-  border: 1px solid #ffffff;
-  color: white;
-  opacity: .8;
-  transition: .2s;
-}
-
-.game-info .move button:hover,
-.game-info .move .active {
-  opacity: 1;
-  background: #666666;
-  outline: none;
-}
-
-.game-info .move li {
-  font-size: calc(1px + 2vmin);
-  margin: 5px 15px;
-}
-
-.game-info .move li button {
-  min-width: calc(125px + 2vmin);
-}
-
-.game-info .move ol {
-  text-align: center;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  max-width: 100px;
-  justify-content: center;
-}
-
-.game-history {
-  margin-top: 130px;
-}
-
-.sort-icon {
-  text-align: right;
-  min-width: 180px;
-}
-
-.sort-icon .icon,
-.sort-icon .icon:hover {
-  background: none;
-  border: none;
-  outline: none;
-}
-
-.sort-icon .icon img {
-  height: 30px;
-  width: 20px;
-}
-
-.sort-icon .icon img:hover {
-  cursor: pointer;
+.game-info::-webkit-scrollbar-track-piece {
+  margin-bottom: 400px;
 }
