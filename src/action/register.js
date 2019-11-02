@@ -24,8 +24,9 @@ export const register = ({ email, password, displayName }) => {
                     history.push('/login');
                 })
                 .catch(err => {
-                    dispatch(RegisterFailure(err.response.data));
-                    message.error(err.response.data);
+                    const errInfor = err.response.data ? err.response.data : "Đã có lỗi xảy ra, vui lòng thử lại";
+                    dispatch(RegisterFailure(errInfor));
+                    message.error(errInfor);
                 })
         }, 1000)
     }

@@ -11,8 +11,9 @@ export const getInfomation = () => {
                 dispatch(GetInfomationSucess(res.data));
             })
             .catch(err => {
-                dispatch(GetInfomationFailure(err.response.data));
-                message.error(err.response.data);
+                const errInfor = err.response.data ? err.response.data : "Đã có lỗi xảy ra, vui lòng thử lại";
+                dispatch(GetInfomationFailure(errInfor));
+                message.error(errInfor);
             })
     }
 }
@@ -21,7 +22,7 @@ export const updateInfomation = ({ email, displayName, _id, birthday, gender, av
     return dispatch => {
         dispatch(GetInfomationPending());
         axios
-            .put(`${LOCAL_API}/update?_id=${_id}`, {
+            .post(`${LOCAL_API}/update?_id=${_id}`, {
                 email,
                 displayName,
                 birthday,
@@ -34,11 +35,13 @@ export const updateInfomation = ({ email, displayName, _id, birthday, gender, av
                 dispatch(GetInfomationSucess(res.data));
             })
             .catch(err => {
-                dispatch(GetInfomationFailure(err.response.data));
-                message.error(err.response.data);
+                const errInfor = err.response.data ? err.response.data : "Đã có lỗi xảy ra, vui lòng thử lại";
+                dispatch(GetInfomationFailure(errInfor));
+                message.error(errInfor);
             })
     }
 }
+
 
 const GetInfomationPending = () => {
     return {
@@ -59,3 +62,4 @@ const GetInfomationFailure = (err) => {
         err
     }
 }
+

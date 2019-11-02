@@ -25,8 +25,9 @@ export const login = ({ email, password }) => {
                     history.push('/home');
                 })
                 .catch(err => {
-                    dispatch(LoginFailure(err.response.data));
-                    message.error(err.response.data);
+                    const errInfor = err.response.data ? err.response.data : "Đã có lỗi xảy ra, vui lòng thử lại";
+                    dispatch(LoginFailure(errInfor));
+                    message.error(errInfor);
                 })
         }, 1000)
     }

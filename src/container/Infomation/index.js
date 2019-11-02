@@ -1,7 +1,7 @@
 import './style.scss'
 
 import React, { Component } from 'react'
-import { Form, Icon, Input, Button, Modal, DatePicker, Select, Avatar, Upload, message } from 'antd';
+import { Form, Input, Button, DatePicker, Select, Avatar, Upload, message } from 'antd';
 import moment from 'moment'
 
 import Header from '../../component/Header'
@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import * as InfomationAction from '../../action/infomation';
 import history from '../../history';
 import { storage } from '../../Firebase';
+import ChangePassword from '../ChangePassword';
 
 const { Option } = Select;
 
@@ -31,20 +32,9 @@ function beforeUpload(file) {
 }
 
 function hasErrors(fieldsError) {
-    const data = {
-        email: fieldsError.email,
-        displayName: fieldsError.displayName,
-    }
-    return Object.keys(data).some(field => data[field]);
+    return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
 
-function hasErrorsChangePW(fieldsError) {
-    const data = {
-        'new-password': fieldsError['new-password'],
-        're-password': fieldsError['re-password'],
-    }
-    return Object.keys(data).some(field => data[field]);
-}
 
 class Infomation extends Component {
 
@@ -52,7 +42,6 @@ class Infomation extends Component {
         ...this.props.account,
         loadingCancel: false,
         visible: false,
-        loadingPW: false,
         loadingImage: false,
         loadingSave: this.props.pending,
         imageUrl: '',
@@ -99,7 +88,7 @@ class Infomation extends Component {
             this.props.form.setFieldsValue({
                 displayName: user.displayName,
                 email: user.email,
-                birthday: moment(user.birthday, 'DD-MM-YYYY'),
+                birthday: user.birthday ? moment(user.birthday, 'DD-MM-YYYY') : null,
                 gender: user.gender,
 
             })
@@ -110,47 +99,6 @@ class Infomation extends Component {
         }, 1000)
 
     }
-
-    showModal = () => {
-        this.setState({
-            visible: true,
-        });
-    };
-
-    handleOk = e => {
-        e.preventDefault();
-        this.setState({ loadingPW: true });
-        setTimeout(() => {
-            this.setState({
-                visible: false,
-                loadingPW: false
-            })
-        }, 1000);
-    };
-
-    handleCancel = e => {
-        e.preventDefault();
-        this.setState({
-            visible: false,
-        });
-        this.props.form.setFieldsValue({
-            'new-password': '',
-            're-password': ''
-        })
-    };
-
-    compareToFirstPassword = (rule, value, callback) => {
-        const { form } = this.props;
-        if (value && value !== form.getFieldValue('new-password')) {
-            callback('Mật khẩu nhập lại chưa đúng!');
-        } else {
-            callback();
-        }
-    };
-
-    handleSelectChange = value => {
-        console.log(value);
-    };
 
     // Handle Upload avatar
 
@@ -192,20 +140,31 @@ class Infomation extends Component {
         );
     }
 
+    showModal = () => {
+        this.setState({
+            visible: true,
+        });
+    };
+
+    handleCancel = () => {
+        this.setState({
+            visible: false,
+        });
+    };
+    handleOK = () => {
+        this.setState({
+            visible: false,
+        });
+    };
     render() {
         const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
 
         // Only show error after a field is touched.
         const emailError = isFieldTouched('email') && getFieldError('email');
-        const passwordError = isFieldTouched('password') && getFieldError('password');
         const displayNameError = isFieldTouched('displayName') && getFieldError('displayName');
-        const newpasswordError = isFieldTouched('new-password') && getFieldError('new-password');
-        const repasswordError = isFieldTouched('re-password') && getFieldError('re-password');
 
-        const { user, loadingCancel, loadingPW, imageUrl, loadingSave } = this.state;
-
+        const { user, loadingCancel, imageUrl, loadingSave, loadingImage } = this.state;
         const check = user.facebookID || user.googleID ? true : false
-        console.log(check);
 
         return (
             <div className="infomation-page">
@@ -220,7 +179,7 @@ class Infomation extends Component {
                             beforeUpload={beforeUpload}
                             onChange={this.handleChangeUpload}
                         >
-                            <Button disabled={check} icon={this.state.loadingImage ? 'loading' : 'upload'} style={{ marginTop: "10px" }}>Tải lên</Button>
+                            <Button disabled={check} icon={loadingImage ? 'loading' : 'upload'} style={{ marginTop: "10px" }}>Tải lên</Button>
                         </Upload>
                     </div>
                     <Form.Item validateStatus={displayNameError ? 'error' : ''} help={displayNameError || ''} label="Tên hiển thị">
@@ -257,14 +216,15 @@ class Infomation extends Component {
                         )}
                     </Form.Item>
                     <Form.Item label="Ngày sinh">
-                        {getFieldDecorator('birthday', { initialValue: user.birthday ? moment('12-12-2019', 'DD-MM-YYYY') : '' })
-                            (<DatePicker placeholder="Chọn ngày sinh" format="DD-MM-YYYY" />)}
+                        {getFieldDecorator('birthday',
+                            { initialValue: user.birthday ? moment(user.birthday, 'DD-MM-YYYY') : '' })(
+                                <DatePicker placeholder="Chọn ngày sinh" format="DD-MM-YYYY" />
+                            )}
                     </Form.Item>
                     <Form.Item label="Giới tính">
                         {getFieldDecorator('gender', { initialValue: user.gender, })(
                             <Select
                                 placeholder="Chọn giới tính"
-                                onChange={this.handleSelectChange}
                             >
                                 <Option value="female">Nữ</Option>
                                 <Option value="male">Nam</Option>
@@ -272,24 +232,16 @@ class Infomation extends Component {
                             </Select>,
                         )}
                     </Form.Item>
-                    {/* <Form.Item label="Mật khẩu">
-                        {getFieldDecorator('password', {
-                            initialValue: user.password,
-                            rules: [{ required: true, message: 'Vui lòng nhập mật khẩu.' }],
-                        })(
-                            <Input.Password
-                                type="password"
-                                placeholder="Mật khẩu"
-                                readOnly
-                                addonAfter={<Icon type="edit" onClick={this.showModal} />}
-                            />,
-                        )}
-                    </Form.Item> */}
+                    <Form.Item >
+                        <Button type="primary" onClick={this.showModal} icon="redo" hidden={check}>
+                            Đổi mật khẩu
+                        </Button>
+                    </Form.Item>
                     <Form.Item >
                         <Button loading={loadingCancel} type="danger" onClick={this.handleReset} icon="close-square-o" style={{ width: "40%" }}>
                             Hủy
                         </Button>
-                        <Button loading={loadingSave} type="primary" icon="save" htmlType="submit" disabled={hasErrors(getFieldsError())} style={{ width: "60%" }}>
+                        <Button loading={loadingSave} type="primary" icon="save" htmlType="submit" disabled={hasErrors(getFieldsError()) || loadingImage} style={{ width: "60%" }}>
                             Lưu
                         </Button>
                     </Form.Item>
@@ -299,58 +251,7 @@ class Infomation extends Component {
                         </Button>
                     </Form.Item>
                 </Form>
-                <Modal
-                    title="Thay đổi mật khẩu"
-                    visible={this.state.visible}
-                    onOk={this.handleOk}
-                    onCancel={this.handleCancel}
-                    footer={[
-                        <Button key="back" type="danger" icon="close-square-o" onClick={this.handleCancel}>
-                            Hủy
-                        </Button>,
-                        <Button key="submit" icon="save" type="primary" htmlType="submit" loading={loadingPW} onClick={this.handleOk} disabled={hasErrorsChangePW(getFieldsError())}>
-                            Lưu
-                        </Button>,
-                    ]}
-                >
-
-                    <Form.Item validateStatus={newpasswordError ? 'error' : ''} help={newpasswordError || ''}>
-                        {getFieldDecorator('new-password', {
-                            // rules: [
-                            //     {
-                            //         required: true,
-                            //         message: 'Vui lòng nhập mật khẩu.'
-                            //     }],
-                        })(
-                            <Input.Password
-                                prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                type="password"
-                                placeholder="Mật khẩu mới"
-                                autoComplete="false"
-                            />,
-                        )}
-                    </Form.Item>
-                    <Form.Item validateStatus={repasswordError ? 'error' : ''} help={repasswordError || ''}>
-                        {getFieldDecorator('re-password', {
-                            // rules: [
-                            //     {
-                            //         required: true,
-                            //         message: 'Vui lòng nhập lại mật khẩu.'
-                            //     },
-                            //     {
-                            //         validator: this.compareToFirstPassword,
-                            //     },
-                            // ],
-                        })(
-                            <Input.Password
-                                prefix={<Icon type="check-circle" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                type="password"
-                                placeholder="Nhập lại mật khẩu"
-                                autoComplete="false"
-                            />,
-                        )}
-                    </Form.Item>
-                </Modal>
+                <ChangePassword visible={this.state.visible} handleCancel={this.handleCancel} handleOK={this.handleOK} _id={this.state.user._id} />
             </div >
         )
     }
@@ -366,7 +267,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
     getInfomation: () => dispatch(InfomationAction.getInfomation()),
-    updateInfomation: (values) => dispatch(InfomationAction.updateInfomation(values))
+    updateInfomation: (values) => dispatch(InfomationAction.updateInfomation(values)),
 })
 
 const WapperFormLogin = (Form.create({ name: 'horizontal_login' })(Infomation));
