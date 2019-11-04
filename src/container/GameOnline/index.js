@@ -8,7 +8,6 @@ import Header from '../../component/Header'
 import sortASC from "../../asset/alphabetical-order.svg";
 import sortDESC from "../../asset/sort-alphabetically-down-from-z-to-a.svg";
 import { connect } from 'react-redux';
-import { AddItem, Reset, ModifiedHistory } from '../../action';
 import * as handleFunction from '../../Helper/handleFunction';
 
 class GameOnline extends React.Component {
@@ -16,10 +15,13 @@ class GameOnline extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            history: this.props.history,
+            history: [{
+                squares: Array(400).fill(null)
+            }],
             xIsNext: true,
             indexCheck: -1,
             stepNumber: 0,
+            stepNumberOnline: 0,
             win: false,
             moveMax: 0,
             isSort: true,
@@ -28,23 +30,32 @@ class GameOnline extends React.Component {
             message: '',
             messages: []
         };
+
+    }
+
+    componentWillMount() {
         this.socket = io('localhost:4500');
 
         this.socket.on('RECEIVE_MESSAGE', function (data) {
             addMessage(data);
         });
 
+        this.socket.on("PLAY", (data) => {
+            handleBotPlay(data);
+        })
+
         const addMessage = data => {
-            console.log(data);
             this.setState({ messages: [...this.state.messages, data] });
-            console.log(this.state.messages);
+        };
+
+        const handleBotPlay = data => {
+            this.setState({
+                history: data.history,
+                stepNumber: data.stepNumber
+            });
         };
     }
-    static getDerivedStateFromProps(props, state) {
-        return {
-            history: props.history
-        }
-    }
+
     handleClick = (i) => {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
@@ -54,59 +65,39 @@ class GameOnline extends React.Component {
                 return;
             };
         }
-        this.props.modifiedHistory(history);
-        if (squares[i] === null) {
 
+        if (squares[i] === null) {
             squares[i] = 'X';
-            this.props.onClick(squares);
 
             this.setState({
+                history: history.concat([{
+                    squares: squares
+                }]),
                 xIsNext: false,
                 indexCheck: i,
                 stepNumber: history.length
             }, () => {
                 setTimeout(() => {
-                    this.handleBotPlay(i)
-                }, 1000)
+                    this.socket.emit("PLAY", { history: this.state.history, stepNumber: this.state.stepNumber })
+                }, 100)
             })
         }
     }
 
-    handleBotPlay = (i) => {
-        const history = this.state.history.slice(0, this.state.stepNumber + 1);
-        const current = history[history.length - 1];
-        const squares = current.squares.slice();
-        if (handleFunction.calculateWinner(this.state.indexCheck, (squares || squares[i]))) {
-            if (handleFunction.checkBlock(this.state.indexCheck, (squares || squares[i]))) {
-                return;
-            };
-        }
-        this.props.modifiedHistory(history);
-        let index = -1;
-        while (true) {
-            index = Math.floor(Math.random() * 400);
-            if (squares[index] === null)
-                break;
-        }
-
-        squares[index] = 'O';
-        this.props.onClick(squares);
-
-        this.setState({
-            xIsNext: true,
-            indexCheck: index,
-            stepNumber: history.length
-        });
-    }
-
     handleClickReset = () => {
-        this.props.reset();
         this.setState({
-            // xIsNext: true,
             indexCheck: -1,
             stepNumber: 0,
             isSort: true,
-        });
+            history: [{
+                squares: Array(400).fill(null)
+            }],
+        }, () => {
+            setTimeout(() => {
+                this.socket.emit("PLAY", { history: this.state.history, stepNumber: this.state.stepNumber })
+            }, 100)
+        })
+
         const cls = document.getElementsByClassName('square');
         Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
     }
@@ -131,11 +122,10 @@ class GameOnline extends React.Component {
             loading: true,
         }, () => setTimeout(() => {
             this.socket.emit('FIND_PLAYER', {
-                id: "123"
+                id: this.props.account.user._id
             })
         }, 1000))
-        this.socket.on('PLAY', data => {
-            console.log('this', this);
+        this.socket.on('START', () => {
             this.setState({ loading: false });
         })
     }
@@ -152,17 +142,18 @@ class GameOnline extends React.Component {
 
     render() {
         const history = this.state.history;
-        const current = history[this.state.stepNumber];
+        const current = history[history.length - 1];
         const squares = current.squares;
         const i = this.state.indexCheck;
         const winner = handleFunction.calculateWinner(i, squares);
+
         let nonBlock = null;
 
         if (winner) {
             nonBlock = handleFunction.checkBlock(i, squares);
         }
 
-        const moves = history.map((step, move) => {
+        const moves = squares.map((step, move) => {
             const desc = move ?
                 'Bước ' + move + ' ' + new Date().toLocaleTimeString() :
                 'Bước bắt đầu chơi';
@@ -172,7 +163,6 @@ class GameOnline extends React.Component {
                 </li>
             );
         });
-
         const movesSort = this.state.isSort ? moves : moves.reverse();
 
         let status;
@@ -190,75 +180,69 @@ class GameOnline extends React.Component {
                 <Button type="primary" onClick={this.findPlayer} icon="redo" hidden={this.state.loading}>
                     Tìm người chơi
                           </Button>
-                {this.state.loading ?
-                    <Spin tip="Đang tìm người chơi..." size="large" style={{ color: "fff" }} >
-                    </Spin> :
-                    <div className="game">
-                        <div className="game-body">
-                            <div className="game-chat">
-                                <div className="title">
-                                    <span style={{ color: '#ffff00' }}>Nhắn tin với người chơi</span>
-                                </div>
-                                <div className="content">
-                                    <div className="group-message">
-                                        {this.state.messages.map(message => {
-                                            return (
-                                                <div>{message.author}: {message.message}</div>
-                                            )
-                                        })}
+                {
+                    this.state.loading ?
+                        <Spin tip="Đang tìm người chơi..." size="large" style={{ color: "fff" }} >
+                        </Spin> :
+                        <div className="game">
+                            <div className="game-body">
+                                <div className="game-chat">
+                                    <div className="title">
+                                        <span style={{ color: '#ffff00' }}>Nhắn tin với người chơi</span>
                                     </div>
-                                    <div className="group-button">
-                                        <Input placeholder="Nhập nội dung tin nhắn..."
-                                            value={this.state.message}
-                                            onChange={ev => this.setState({ message: ev.target.value })}
-                                            onPressEnter={this.sendMessage} />
-                                        <Button type="primary" onClick={this.sendMessage}>Gửi</Button>
+                                    <div className="content">
+                                        <div className="group-message">
+                                            {this.state.messages.map(message => {
+                                                return (
+                                                    <div>{message.author}: {message.message}</div>
+                                                )
+                                            })}
+                                        </div>
+                                        <div className="group-button">
+                                            <Input placeholder="Nhập nội dung tin nhắn..."
+                                                value={this.state.message}
+                                                onChange={ev => this.setState({ message: ev.target.value })}
+                                                onPressEnter={this.sendMessage} />
+                                            <Button type="primary" onClick={this.sendMessage}>Gửi</Button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="game-board">
-                                <div className="status" style={{ color: '#ffff00' }}>{status}</div>
-                                <div className="play-again" >
-                                    <button onClick={() => this.handleClickReset()}>
-                                        Chơi lại
+                                <div className="game-board">
+                                    <div className="status" style={{ color: '#ffff00' }}>{status}</div>
+                                    <div className="play-again" >
+                                        <button onClick={() => this.handleClickReset()}>
+                                            Chơi lại
                                 </button>
+                                    </div>
+                                    <Board
+                                        squares={current.squares}
+                                        onClick={(i) => this.handleClick(i)}
+                                    // disable={!this.state.xIsNext || this.props.disable}
+                                    />
                                 </div>
-                                <Board
-                                    squares={current.squares}
-                                    onClick={(i) => this.handleClick(i)}
-                                    disable={!this.state.xIsNext || this.props.disable}
-                                />
-                            </div>
-                            <div className="game-history">
-                                <div className="sort-icon">
-                                    <span style={{ color: '#ffff00' }}>Lịch sử bước đi</span>
-                                    <button className="icon" onClick={() => this.handleSort()}>
-                                        <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
-                                    </button>
-                                </div>
-                                <div className="game-info">
-                                    <div className="move">
-                                        <ol>{movesSort}</ol>
+                                <div className="game-history">
+                                    <div className="sort-icon">
+                                        <span style={{ color: '#ffff00' }}>Lịch sử bước đi</span>
+                                        <button className="icon" onClick={() => this.handleSort()}>
+                                            <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
+                                        </button>
+                                    </div>
+                                    <div className="game-info">
+                                        <div className="move">
+                                            <ol>{movesSort}</ol>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                 }
-            </div>
+            </div >
         );
     }
 }
 
 const mapStateToProps = (state) => ({
-    history: state.game.history,
     account: state.login.account
 })
 
-const mapDispatchToProps = (dispatch) => ({
-    onClick: (data) => dispatch(AddItem(data)),
-    reset: () => dispatch(Reset()),
-    modifiedHistory: (history) => dispatch(ModifiedHistory(history))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(GameOnline)
+export default connect(mapStateToProps)(GameOnline)
