@@ -19,9 +19,9 @@ class GameOnline extends React.Component {
                 squares: Array(400).fill(null)
             }],
             xIsNext: true,
+            isPress: true,
             indexCheck: -1,
             stepNumber: 0,
-            stepNumberOnline: 0,
             win: false,
             moveMax: 0,
             isSort: true,
@@ -41,44 +41,51 @@ class GameOnline extends React.Component {
         });
 
         this.socket.on("PLAY", (data) => {
-            handleBotPlay(data);
+            handleOnlinePlay(data);
         })
 
         const addMessage = data => {
             this.setState({ messages: [...this.state.messages, data] });
         };
 
-        const handleBotPlay = data => {
+        const handleOnlinePlay = data => {
             this.setState({
                 history: data.history,
-                stepNumber: data.stepNumber
+                stepNumber: data.stepNumber,
+                xIsNext: data.xIsNext,
+                isPress: true
             });
         };
     }
 
     handleClick = (i) => {
-        const history = this.state.history.slice(0, this.state.stepNumber + 1);
-        const current = history[history.length - 1];
+        const { xIsNext, history, indexCheck, stepNumber } = this.state;
+
+        const historyNew = history.slice(0, stepNumber + 1);
+        const current = historyNew[historyNew.length - 1];
         const squares = current.squares.slice();
-        if (handleFunction.calculateWinner(this.state.indexCheck, (squares || squares[i]))) {
-            if (handleFunction.checkBlock(this.state.indexCheck, (squares || squares[i]))) {
+
+        if (handleFunction.calculateWinner(indexCheck, (squares || squares[i]))) {
+            if (handleFunction.checkBlock(indexCheck, (squares || squares[i]))) {
                 return;
             };
         }
 
         if (squares[i] === null) {
-            squares[i] = 'X';
+            squares[i] = xIsNext ? 'X' : 'O';
 
             this.setState({
-                history: history.concat([{
+                history: historyNew.concat([{
                     squares: squares
                 }]),
-                xIsNext: false,
+                xIsNext: !xIsNext,
                 indexCheck: i,
-                stepNumber: history.length
+                stepNumber: historyNew.length,
+                isPress: false,
             }, () => {
+                const { xIsNext, history, stepNumber, isPress } = this.state;
                 setTimeout(() => {
-                    this.socket.emit("PLAY", { history: this.state.history, stepNumber: this.state.stepNumber })
+                    this.socket.emit("PLAY", { history, stepNumber, xIsNext, isPress })
                 }, 100)
             })
         }
@@ -141,8 +148,10 @@ class GameOnline extends React.Component {
     }
 
     render() {
-        const history = this.state.history;
-        const current = history[history.length - 1];
+
+        const { xIsNext, history, stepNumber, isSort, isPress } = this.state;
+
+        const current = history[stepNumber];
         const squares = current.squares;
         const i = this.state.indexCheck;
         const winner = handleFunction.calculateWinner(i, squares);
@@ -153,25 +162,25 @@ class GameOnline extends React.Component {
             nonBlock = handleFunction.checkBlock(i, squares);
         }
 
-        const moves = squares.map((step, move) => {
+        const moves = history.map((step, move) => {
             const desc = move ?
                 'Bước ' + move + ' ' + new Date().toLocaleTimeString() :
                 'Bước bắt đầu chơi';
             return (
                 <li key={move}>
-                    <button onClick={() => this.jumpTo(move)} className={this.state.stepNumber === move ? "active" : ""}>{desc}</button>
+                    <button onClick={() => this.jumpTo(move)} className={stepNumber === move ? "active" : ""}>{desc}</button>
                 </li>
             );
         });
-        const movesSort = this.state.isSort ? moves : moves.reverse();
+        const movesSort = isSort ? moves : moves.reverse();
 
         let status;
 
         if (nonBlock) {
-            status = (squares[i] === 'X' ? "Bạn đã thắng" : "Máy đã thắng");
+            // status = (squares[i] === 'X' ? "Bạn đã thắng" : "Máy đã thắng");
             handleFunction.styleWinner(i, squares);
         } else {
-            status = (this.state.xIsNext ? 'Tới lượt bạn' : 'Tới lượt máy');
+            status = (xIsNext ? 'Tới lượt bạn' : 'Tới lượt máy');
         }
 
         return (
@@ -208,7 +217,7 @@ class GameOnline extends React.Component {
                                     </div>
                                 </div>
                                 <div className="game-board">
-                                    <div className="status" style={{ color: '#ffff00' }}>{status}</div>
+                                    {/* <div className="status" style={{ color: '#ffff00' }}>{status}</div> */}
                                     <div className="play-again" >
                                         <button onClick={() => this.handleClickReset()}>
                                             Chơi lại
@@ -217,7 +226,7 @@ class GameOnline extends React.Component {
                                     <Board
                                         squares={current.squares}
                                         onClick={(i) => this.handleClick(i)}
-                                    // disable={!this.state.xIsNext || this.props.disable}
+                                        disable={!isPress}
                                     />
                                 </div>
                                 <div className="game-history">
