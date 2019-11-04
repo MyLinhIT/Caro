@@ -25,6 +25,10 @@ const Home = (props) => {
                                 Chơi game
                                <Icon type="play-circle" />
                             </Button>
+                            <Button type="primary" onClick={() => history.push("/play-online")}>
+                                Chơi online
+                               <Icon type="play-circle" />
+                            </Button>
                             <Button type="primary" onClick={() => props.logout()}>
                                 Đăng xuất
                                     <Icon type="logout" />

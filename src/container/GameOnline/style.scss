@@ -1,0 +1,63 @@
+.game-chat {
+    margin-top: 130px;
+    margin-bottom: 90px;
+    min-width: 300px;
+
+    .content {
+        border: 1px solid #ffffff;
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+
+        .group-message {
+            font-size: 16px;
+            padding-top: 10px;
+            max-height: 550px;
+            overflow-y: auto;
+
+            div {
+                background-color: rgba(82, 86, 92, 0.8);
+                border-radius: 999px;
+                width: max-content;
+                padding: 5px 15px;
+                margin-bottom: 10px;
+            }
+
+        }
+
+        .group-button {
+            justify-content: space-between;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            margin-top: auto;
+        }
+    }
+
+}
+
+
+.group-message::-webkit-scrollbar {
+    border-radius: 10px;
+}
+
+.group-message::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #F5F5F5;
+}
+
+.group-message::-webkit-scrollbar {
+    width: 12px;
+    background-color: #F5F5F5;
+}
+
+.group-message::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    background-color: #f8cb00d3;
+}
+
+.group-message::-webkit-scrollbar-track-piece {
+    margin-bottom: 400px;
+}

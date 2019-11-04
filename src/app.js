@@ -10,6 +10,7 @@ import Home from './container/Home';
 import { Route, Switch, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Infomation from './container/Infomation/index';
+import Chat from './container/GameOnline';
 
 const App = (props) => {
     return (
@@ -31,6 +32,9 @@ const App = (props) => {
             </Route>
             <Route path="/play">
                 {props.isLoggin ? <Game /> : <Redirect to="/login" />}
+            </Route>
+            <Route path="/play-online">
+                {props.isLoggin ? <Chat /> : <Redirect to="/login" />}
             </Route>
             <Route path="/me">
                 {localStorage.getItem("jwt_token") ? <Infomation /> : <Redirect to="/login" />}
