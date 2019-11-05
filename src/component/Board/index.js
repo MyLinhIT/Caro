@@ -2,12 +2,14 @@ import React from 'react';
 import Square from '../Square/index';
 export default class Board extends React.Component {
     renderSquare(i) {
+        console.log(this.props.indexCheck)
         return (
             <Square
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
                 id={i}
                 disable={this.props.disable}
+                indexCheck={this.props.indexCheck}
             />
         );
     }

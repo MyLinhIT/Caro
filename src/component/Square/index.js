@@ -1,9 +1,13 @@
-import './style.css';
+import './style.scss';
 import React from 'react';
 
-const Square = ({ onClick, id, value, disable }) => {
+const Square = ({ onClick, id, value, disable,indexCheck }) => {
+
+    let className = value === "X" ? "square__X": "square__O";
+    className += indexCheck === id ? " square__active": "";
+    
     return (
-        <button className="square" onClick={onClick} id={id} disabled={disable}>
+        <button className={className + " square"} onClick={onClick} id={id} disabled={disable}>
             {value}
         </button>
     );

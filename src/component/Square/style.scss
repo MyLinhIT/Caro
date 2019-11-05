@@ -12,8 +12,14 @@
     padding: 0;
     text-align: center;
     width: 30px;
+
+    &:focus,&:hover, &__active{
+        outline: none;
+        background-color: #e9de7e;
+    }
+
+   &__O{
+    color: #2268ff !important;
+   }
 }
 
-.square:focus {
-    outline: none;
-}

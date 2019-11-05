@@ -19,7 +19,7 @@ class GameOnline extends React.Component {
                 squares: Array(400).fill(null)
             }],
             xIsNext: true,
-            isPress: true,
+            isDisable: false,
             indexCheck: -1,
             stepNumber: 0,
             win: false,
@@ -28,21 +28,30 @@ class GameOnline extends React.Component {
             loading: false,
             username: '',
             message: '',
-            messages: []
+            messages: [],
+            ID: '',
         };
 
     }
 
     componentWillMount() {
+        this.setState({
+            ID: ("" + Math.random()).substring(2, 7)}
+        );
         this.socket = io('localhost:4500');
 
         this.socket.on('RECEIVE_MESSAGE', function (data) {
             addMessage(data);
         });
 
-        this.socket.on("PLAY", (data) => {
+        this.socket.on("PLAYED", (data) => {
             handleOnlinePlay(data);
         })
+
+        this.socket.on("WINED", (data) => {
+            handleWin(data);
+        })
+
 
         const addMessage = data => {
             this.setState({ messages: [...this.state.messages, data] });
@@ -53,7 +62,7 @@ class GameOnline extends React.Component {
                 history: data.history,
                 stepNumber: data.stepNumber,
                 xIsNext: data.xIsNext,
-                isPress: true
+                isDisable: this.state.ID === data.ID
             });
         };
     }
@@ -81,11 +90,10 @@ class GameOnline extends React.Component {
                 xIsNext: !xIsNext,
                 indexCheck: i,
                 stepNumber: historyNew.length,
-                isPress: false,
             }, () => {
-                const { xIsNext, history, stepNumber, isPress } = this.state;
+                const { xIsNext, history, stepNumber, ID } = this.state;
                 setTimeout(() => {
-                    this.socket.emit("PLAY", { history, stepNumber, xIsNext, isPress })
+                    this.socket.emit("PLAY", { history, stepNumber, xIsNext, ID })
                 }, 100)
             })
         }
@@ -149,11 +157,11 @@ class GameOnline extends React.Component {
 
     render() {
 
-        const { xIsNext, history, stepNumber, isSort, isPress } = this.state;
+        const { xIsNext, history, stepNumber, isSort, isDisable,indexCheck,ID } = this.state;
 
         const current = history[stepNumber];
         const squares = current.squares;
-        const i = this.state.indexCheck;
+        const i = indexCheck;
         const winner = handleFunction.calculateWinner(i, squares);
 
         let nonBlock = null;
@@ -177,10 +185,11 @@ class GameOnline extends React.Component {
         let status;
 
         if (nonBlock) {
-            // status = (squares[i] === 'X' ? "Bạn đã thắng" : "Máy đã thắng");
-            handleFunction.styleWinner(i, squares);
+            // status =(!isDisable ? 'Bạn đã thắng' : 'Đối thủ thắng');
+            this.socket.emit("WIN",{ID})
+            // handleFunction.styleWinner(i, squares);
         } else {
-            status = (xIsNext ? 'Tới lượt bạn' : 'Tới lượt máy');
+            status = (!isDisable ? 'Tới lượt bạn' : 'Tới lượt đối thủ');
         }
 
         return (
@@ -215,9 +224,9 @@ class GameOnline extends React.Component {
                                             <Button type="primary" onClick={this.sendMessage}>Gửi</Button>
                                         </div>
                                     </div>
-                                </div>
+                                </div> 
                                 <div className="game-board">
-                                    {/* <div className="status" style={{ color: '#ffff00' }}>{status}</div> */}
+                                    <div className="status" style={{ color: '#ffff00' }}>{status}</div>
                                     <div className="play-again" >
                                         <button onClick={() => this.handleClickReset()}>
                                             Chơi lại
@@ -226,7 +235,8 @@ class GameOnline extends React.Component {
                                     <Board
                                         squares={current.squares}
                                         onClick={(i) => this.handleClick(i)}
-                                        disable={!isPress}
+                                        disable={isDisable}
+                                        indexCheck={i}
                                     />
                                 </div>
                                 <div className="game-history">
