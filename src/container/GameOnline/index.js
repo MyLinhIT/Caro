@@ -68,6 +68,23 @@ class GameOnline extends React.Component {
       });
     });
 
+    this.socket.on('WANT_UNDO', data => {
+      if (this.state.ID !== data.ID) {
+        handleUndoServer(data);
+      }
+    });
+
+    this.socket.on('REPLIED_UNDO', data => {
+      if (this.state.ID !== data.ID) {
+        if (data.status) {
+          handleExceptUndo(data);
+          message.info('Mời bạn đánh lại, đối thủ của bạn đã chấp nhận.');
+        } else {
+          message.info('Rất tiếc, đối thủ bạn không chấp nhận.');
+        }
+      }
+    });
+
     const addMessage = data => {
       this.setState({
         messages: [
@@ -78,11 +95,16 @@ class GameOnline extends React.Component {
     };
 
     const handleOnlinePlay = data => {
+      const isDisable = data.isUndo
+        ? this.state.ID !== data.ID
+          ? true
+          : false
+        : this.state.ID === data.ID;
       this.setState({
         history: data.history,
         stepNumber: data.stepNumber,
         xIsNext: data.xIsNext,
-        isDisable: this.state.ID === data.ID
+        isDisable: isDisable
       });
     };
 
@@ -97,6 +119,25 @@ class GameOnline extends React.Component {
     const handleWin = data => {
       this.socket.emit('DISCONNECT');
       data.ID === this.state.ID ? this.showModalWin() : this.showModalLost();
+    };
+
+    const handleUndoServer = () => {
+      this.showModalUndo();
+    };
+
+    const handleExceptUndo = data => {
+      const { xIsNext, history, stepNumber, ID } = this.state;
+      this.socket.emit('PLAY', {
+        history,
+        stepNumber: stepNumber - 1,
+        xIsNext: !xIsNext,
+        ID,
+        isUndo: true
+      });
+      this.setState({
+        stepNumber: this.state.stepNumber - 1,
+        xIsNext: !this.state.xIsNext
+      });
     };
   }
 
@@ -152,6 +193,11 @@ class GameOnline extends React.Component {
         }
       );
     }
+  };
+
+  handleUndo = () => {
+    message.info('Xin chờ đối thủ phản hồi!');
+    this.socket.emit('UNDO', { ID: this.state.ID });
   };
 
   findPlayer = () => {
@@ -279,6 +325,40 @@ class GameOnline extends React.Component {
     });
   };
 
+  showModalUndo = () => {
+    this.setState({
+      visibleUndo: true
+    });
+  };
+
+  handleOKUndo = () => {
+    this.setState(
+      {
+        visibleUndo: false
+      },
+      () => {
+        this.socket.emit('REPLY_UNDO', {
+          ID: this.state.ID,
+          status: true
+        });
+      }
+    );
+  };
+
+  handleCancelUndo = e => {
+    this.setState(
+      {
+        visibleUndo: false
+      },
+      () => {
+        this.socket.emit('REPLY_UNDO', {
+          ID: this.state.ID,
+          status: false
+        });
+      }
+    );
+  };
+
   render() {
     const {
       history,
@@ -298,6 +378,9 @@ class GameOnline extends React.Component {
 
     const current = history[stepNumber];
     const squares = current.squares;
+
+    const checkNull = squares.every(item => item === null)
+
     const i = indexCheck;
     const winner = handleFunction.calculateWinner(i, squares);
 
@@ -313,7 +396,6 @@ class GameOnline extends React.Component {
       this.socket.emit('WIN', { ID });
     } else {
       status = !isDisable ? 'Tới lượt bạn' : 'Tới lượt đối thủ';
-    
     }
     return (
       <div>
@@ -337,7 +419,7 @@ class GameOnline extends React.Component {
               </div>
               <div className="game-group-button">
                 <div className="status" style={{ color: '#ffff00' }}>
-                  {status}
+                  {isPlaying ? status : 'Mời bạn tìm người chơi'}
                 </div>
                 <div className="group-button">
                   <Button
@@ -354,7 +436,11 @@ class GameOnline extends React.Component {
                   <Button type="primary" disabled={!isPlaying}>
                     Đầu hàng
                   </Button>
-                  <Button type="primary" disabled={!isPlaying}>
+                  <Button
+                    type="primary"
+                    disabled={!isPlaying || !isDisable || checkNull}
+                    onClick={this.handleUndo}
+                  >
                     Quay lại bước đi
                   </Button>
                 </div>
@@ -444,6 +530,22 @@ class GameOnline extends React.Component {
           ]}
         >
           Xin chia buồn, bạn đã thua
+        </Modal>
+        <Modal
+          title="Quay lại bước đi"
+          visible={this.state.visibleUndo}
+          onCancel={this.handleCancelUndo}
+          onOk={this.handleOKUndo}
+          footer={[
+            <Button key="back" onClick={this.handleCancelUndo}>
+              Không
+            </Button>,
+            <Button key="submit" onClick={this.handleOKUndo}>
+              Có
+            </Button>
+          ]}
+        >
+         Bạn có muốn đối thủ quay lại bước đi?
         </Modal>
       </div>
     );
