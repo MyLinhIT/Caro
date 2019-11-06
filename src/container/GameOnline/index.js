@@ -1,4 +1,5 @@
 import './style.scss';
+import {API} from '../../contant'
 
 import React from 'react';
 import io from 'socket.io-client';
@@ -42,7 +43,7 @@ class GameOnline extends React.Component {
     this.setState({
       ID: ('' + Math.random()).substring(2, 7)
     });
-    this.socket = io('localhost:4500');
+    this.socket = io(API);
 
     this.socket.on('RECEIVE_MESSAGE', function(data) {
       addMessage(data);
@@ -212,7 +213,7 @@ class GameOnline extends React.Component {
   };
 
   findPlayer = () => {
-    this.socket = io('localhost:4500');
+    this.socket = io(API);
     this.setState(
       {
         loading: true
@@ -265,7 +266,7 @@ class GameOnline extends React.Component {
         isRePlaying: true
       },
       () => {
-        this.socket = io('localhost:4500');
+        this.socket = io(API);
         this.socket.emit('RE_PLAY', {
           ID: this.state.ID
         });
@@ -311,7 +312,7 @@ class GameOnline extends React.Component {
         isRePlaying: true
       },
       () => {
-        this.socket = io('localhost:4500');
+        this.socket = io(API);
         this.socket.emit('RE_PLAY', {
           ID: this.state.ID
         });
