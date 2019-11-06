@@ -1,5 +1,5 @@
 
-import { LOCAL_API, CHANGE_PASSWORD_PENDING, CHANGE_PASSWORD_SUCESS, CHANGE_PASSWORD_FAILURE } from './../contant/index';
+import { API, CHANGE_PASSWORD_PENDING, CHANGE_PASSWORD_SUCESS, CHANGE_PASSWORD_FAILURE } from './../contant/index';
 import axios from 'axios';
 import { message } from 'antd';
 
@@ -7,7 +7,7 @@ export const changePassword = ({ password, newPassword, _id }) => {
     return dispatch => {
         dispatch(ChangePasswordPending());
         axios
-            .post(`${LOCAL_API}/change-password?_id=${_id}`, {
+            .post(`${API}/change-password?_id=${_id}`, {
                 password, newPassword
             })
             .then((res) => {

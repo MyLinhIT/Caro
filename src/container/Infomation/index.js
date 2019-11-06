@@ -169,7 +169,6 @@ class Infomation extends Component {
         return (
             <div className="infomation-page">
                 <Header />
-                <h1>Thông tin cá nhân</h1>
                 <Form layout="vertical" className="form-infomation" onSubmit={this.handleSubmit}>
                     <div className="clearfix" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <Avatar size={128} src={imageUrl || user.avatar || ""} />

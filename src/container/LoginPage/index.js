@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import * as LoginAction from '../../action/login';
 
 
-import { LOCAL_API } from '../../contant'
+import { API } from '../../contant'
 
 function hasErrors(fieldsError) {
     return Object.keys(fieldsError).some(field => fieldsError[field]);
@@ -32,12 +32,12 @@ class Login extends React.Component {
 
     handleLoginFacebook = e => {
         e.preventDefault();
-        window.location.replace(`${LOCAL_API}/auth/facebook`);
+        window.location.replace(`${API}/auth/facebook`);
     }
 
     handleLoginGoogle = e => {
         e.preventDefault();
-        window.location.replace(`${LOCAL_API}/auth/google`);
+        window.location.replace(`${API}/auth/google`);
     }
 
 

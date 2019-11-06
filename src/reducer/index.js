@@ -4,7 +4,6 @@ import login from './login'
 import register from './register'
 import getInfomation from './infomation'
 import changePasswordReducer from './change-password'
-import gameOnlineReducer from './game-online';
 
 export default combineReducers({
     game,
@@ -12,5 +11,4 @@ export default combineReducers({
     register,
     getInfomation,
     changePasswordReducer,
-    gameOnlineReducer
 })

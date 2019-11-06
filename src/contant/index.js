@@ -3,8 +3,8 @@ export const COLUMN = 20;
 export const PRIMARY_DIAGONAL = 21;
 export const SECONDARY_DIAGONAL = 19;
 
-export const LOCAL_API = ' http://localhost:4500'
-export const HOST_API = 'https://caro-1612334-api.herokuapp.com'
+// export const API = ' http://localhost:4500'
+export const API = 'https://caro-1612334-api.herokuapp.com'
 
 export const ADD_ITEM = 'ADD_ITEM';
 export const RESET = 'RESET';

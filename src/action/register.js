@@ -2,7 +2,7 @@ import {
     REGISTER_SUCESS,
     REGISTER_PENDING,
     REGISTER_FAILURE,
-    LOCAL_API
+    API
 } from '../contant/index'
 import axios from 'axios';
 import { message } from 'antd';
@@ -13,7 +13,7 @@ export const register = ({ email, password, displayName }) => {
         dispatch(RegisterPending());
         setTimeout(() => {
             axios
-                .post(`${LOCAL_API}/user/register`, {
+                .post(`${API}/user/register`, {
                     email,
                     password,
                     displayName

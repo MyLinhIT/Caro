@@ -3,7 +3,7 @@ import {
     LOGIN_PENDING,
     LOGIN_FAILURE,
     LOGOUT,
-    LOCAL_API,
+    API,
 } from '../contant/index'
 import axios from 'axios';
 import { message } from 'antd';
@@ -14,7 +14,7 @@ export const login = ({ email, password }) => {
         dispatch(LoginPending());
         setTimeout(() => {
             axios
-                .post(`${LOCAL_API}/user/login`, {
+                .post(`${API}/user/login`, {
                     email,
                     password
                 })

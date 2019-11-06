@@ -1,267 +1,466 @@
-import './style.scss'
+import './style.scss';
 
-import React from "react";
-import io from "socket.io-client";
-import { Spin, Button, Input } from 'antd';
+import React from 'react';
+import io from 'socket.io-client';
+import { message, Button, Input, Avatar, Modal } from 'antd';
 import Board from '../../component/Board';
-import Header from '../../component/Header'
-import sortASC from "../../asset/alphabetical-order.svg";
-import sortDESC from "../../asset/sort-alphabetically-down-from-z-to-a.svg";
 import { connect } from 'react-redux';
 import * as handleFunction from '../../Helper/handleFunction';
+import * as InfomationAction from '../../action/infomation';
 
 class GameOnline extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      history: [
+        {
+          squares: Array(400).fill(null)
+        }
+      ],
+      xIsNext: true,
+      isDisable: false,
+      indexCheck: -1,
+      stepNumber: 0,
+      win: false,
+      loading: false,
+      isPlaying: false,
+      message: '',
+      messages: [],
+      ID: '',
+      visibleWin: false,
+      visibleLost: false,
+      isRePlaying: false,
+      pattern: {}
+    };
+  }
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            history: [{
-                squares: Array(400).fill(null)
-            }],
-            xIsNext: true,
-            isDisable: false,
-            indexCheck: -1,
-            stepNumber: 0,
-            win: false,
-            moveMax: 0,
-            isSort: true,
-            loading: false,
-            username: '',
-            message: '',
-            messages: [],
-            ID: '',
-        };
+  componentWillMount() {
+    this.props.getInfomation();
 
+    this.setState({
+      ID: ('' + Math.random()).substring(2, 7)
+    });
+    this.socket = io('localhost:4500');
+
+    this.socket.on('RECEIVE_MESSAGE', function(data) {
+      addMessage(data);
+    });
+
+    this.socket.on('PLAYED', data => {
+      handleOnlinePlay(data);
+    });
+
+    this.socket.on('END_GAME', data => {
+      handleWin(data);
+    });
+
+    this.socket.on('RE_PLAYED', data => {
+      rePlay(data);
+    });
+
+    this.socket.on('START', data => {
+      message.success('Chúc mừng bạn! Đã có đồng đội, mời bạn chơi game.');
+      const pattern = data.filter(item => item.id !== this.state.ID);
+      this.setState({
+        loading: false,
+        isPlaying: true,
+        pattern: pattern[0].user
+      });
+    });
+
+    const addMessage = data => {
+      this.setState({
+        messages: [
+          ...this.state.messages,
+          { ...data, isSending: this.state.ID === data.ID }
+        ]
+      });
+    };
+
+    const handleOnlinePlay = data => {
+      this.setState({
+        history: data.history,
+        stepNumber: data.stepNumber,
+        xIsNext: data.xIsNext,
+        isDisable: this.state.ID === data.ID
+      });
+    };
+
+    const rePlay = data => {
+      message.success('Đồng đội bạn đã xác nhận, mời tiếp tục');
+      this.setState({
+        isRePlaying: this.state.ID === data.ID,
+        isDisable: this.state.ID === data.ID
+      });
+    };
+
+    const handleWin = data => {
+      this.socket.emit('DISCONNECT');
+      data.ID === this.state.ID ? this.showModalWin() : this.showModalLost();
+    };
+  }
+
+  handleClick = i => {
+    const {
+      xIsNext,
+      history,
+      indexCheck,
+      stepNumber,
+      isPlaying,
+      isRePlaying
+    } = this.state;
+
+    if (!isPlaying) {
+      message.info('Bạn chưa tìm người chơi, mời tìm người để chơi.');
+      return null;
     }
 
-    componentWillMount() {
-        this.setState({
-            ID: ("" + Math.random()).substring(2, 7)}
-        );
+    if (isRePlaying) {
+      message.info('Mời bạn chờ đồng đội xác nhận.');
+      return null;
+    }
+
+    const historyNew = history.slice(0, stepNumber + 1);
+    const current = historyNew[historyNew.length - 1];
+    const squares = current.squares.slice();
+
+    if (handleFunction.calculateWinner(indexCheck, squares || squares[i])) {
+      if (handleFunction.checkBlock(indexCheck, squares || squares[i])) {
+        return;
+      }
+    }
+
+    if (squares[i] === null) {
+      squares[i] = xIsNext ? 'X' : 'O';
+
+      this.setState(
+        {
+          history: historyNew.concat([
+            {
+              squares: squares
+            }
+          ]),
+          xIsNext: !xIsNext,
+          indexCheck: i,
+          stepNumber: historyNew.length
+        },
+        () => {
+          const { xIsNext, history, stepNumber, ID } = this.state;
+          setTimeout(() => {
+            this.socket.emit('PLAY', { history, stepNumber, xIsNext, ID });
+          }, 100);
+        }
+      );
+    }
+  };
+
+  findPlayer = () => {
+    this.socket = io('localhost:4500');
+    this.setState(
+      {
+        loading: true
+      },
+      () =>
+        setTimeout(() => {
+          this.socket.emit('FIND_PLAYER', {
+            id: this.state.ID,
+            user: this.props.account.user
+          });
+        }, 1000)
+    );
+  };
+
+  sendMessage = e => {
+    const { isPlaying } = this.state;
+
+    if (!isPlaying) {
+      message.info('Bạn chưa tìm người chơi, mời tìm người để chơi.');
+      return null;
+    }
+    e.preventDefault();
+
+    this.socket.emit('SEND_MESSAGE', {
+      avatar: this.props.account.user.avatar,
+      message: this.state.message,
+      ID: this.state.ID
+    });
+    this.setState({ message: '' });
+  };
+
+  showModalWin = () => {
+    this.setState({
+      visibleWin: true
+    });
+  };
+
+  handleOKWin = () => {
+    this.setState(
+      {
+        indexCheck: -1,
+        stepNumber: 0,
+        history: [
+          {
+            squares: Array(400).fill(null)
+          }
+        ],
+        visibleWin: false,
+        isDisable: true,
+        isRePlaying: true
+      },
+      () => {
         this.socket = io('localhost:4500');
-
-        this.socket.on('RECEIVE_MESSAGE', function (data) {
-            addMessage(data);
+        this.socket.emit('RE_PLAY', {
+          ID: this.state.ID
         });
+      }
+    );
+  };
 
-        this.socket.on("PLAYED", (data) => {
-            handleOnlinePlay(data);
-        })
-
-        this.socket.on("WINED", (data) => {
-            handleWin(data);
-        })
-
-
-        const addMessage = data => {
-            this.setState({ messages: [...this.state.messages, data] });
-        };
-
-        const handleOnlinePlay = data => {
-            this.setState({
-                history: data.history,
-                stepNumber: data.stepNumber,
-                xIsNext: data.xIsNext,
-                isDisable: this.state.ID === data.ID
-            });
-        };
-    }
-
-    handleClick = (i) => {
-        const { xIsNext, history, indexCheck, stepNumber } = this.state;
-
-        const historyNew = history.slice(0, stepNumber + 1);
-        const current = historyNew[historyNew.length - 1];
-        const squares = current.squares.slice();
-
-        if (handleFunction.calculateWinner(indexCheck, (squares || squares[i]))) {
-            if (handleFunction.checkBlock(indexCheck, (squares || squares[i]))) {
-                return;
-            };
+  handleCancelWin = e => {
+    this.socket.emit('DISCONNECT');
+    this.setState({
+      visibleWin: false,
+      isPlaying: false,
+      indexCheck: -1,
+      stepNumber: 0,
+      history: [
+        {
+          squares: Array(400).fill(null)
         }
+      ],
+      pattern: {},
+      messages: []
+    });
+  };
 
-        if (squares[i] === null) {
-            squares[i] = xIsNext ? 'X' : 'O';
+  showModalLost = () => {
+    this.setState({
+      visibleLost: true
+    });
+  };
 
-            this.setState({
-                history: historyNew.concat([{
-                    squares: squares
-                }]),
-                xIsNext: !xIsNext,
-                indexCheck: i,
-                stepNumber: historyNew.length,
-            }, () => {
-                const { xIsNext, history, stepNumber, ID } = this.state;
-                setTimeout(() => {
-                    this.socket.emit("PLAY", { history, stepNumber, xIsNext, ID })
-                }, 100)
-            })
-        }
-    }
-
-    handleClickReset = () => {
-        this.setState({
-            indexCheck: -1,
-            stepNumber: 0,
-            isSort: true,
-            history: [{
-                squares: Array(400).fill(null)
-            }],
-        }, () => {
-            setTimeout(() => {
-                this.socket.emit("PLAY", { history: this.state.history, stepNumber: this.state.stepNumber })
-            }, 100)
-        })
-
-        const cls = document.getElementsByClassName('square');
-        Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
-    }
-
-    jumpTo = (step) => {
-        this.setState({
-            stepNumber: step,
-            xIsNext: (step % 2) === 0,
+  handleOKLost = () => {
+    this.setState(
+      {
+        indexCheck: -1,
+        stepNumber: 0,
+        history: [
+          {
+            squares: Array(400).fill(null)
+          }
+        ],
+        visibleLost: false,
+        isDisable: true,
+        isRePlaying: true
+      },
+      () => {
+        this.socket = io('localhost:4500');
+        this.socket.emit('RE_PLAY', {
+          ID: this.state.ID
         });
-        const cls = document.getElementsByClassName('square');
-        Array.prototype.forEach.call(cls, (item) => item.removeAttribute('style'));
-    }
+      }
+    );
+  };
 
-    handleSort = () => {
-        this.setState({
-            isSort: !this.state.isSort
-        })
-    }
-
-    findPlayer = () => {
-        this.setState({
-            loading: true,
-        }, () => setTimeout(() => {
-            this.socket.emit('FIND_PLAYER', {
-                id: this.props.account.user._id
-            })
-        }, 1000))
-        this.socket.on('START', () => {
-            this.setState({ loading: false });
-        })
-    }
-
-    sendMessage = e => {
-        e.preventDefault();
-        this.socket.emit('SEND_MESSAGE', {
-            author: this.props.account.user.displayName,
-            message: this.state.message
-        })
-        this.setState({ message: '' });
-
-    }
-
-    render() {
-
-        const { xIsNext, history, stepNumber, isSort, isDisable,indexCheck,ID } = this.state;
-
-        const current = history[stepNumber];
-        const squares = current.squares;
-        const i = indexCheck;
-        const winner = handleFunction.calculateWinner(i, squares);
-
-        let nonBlock = null;
-
-        if (winner) {
-            nonBlock = handleFunction.checkBlock(i, squares);
+  handleCancelLost = e => {
+    this.socket.emit('DISCONNECT');
+    this.setState({
+      visibleLost: false,
+      isPlaying: false,
+      indexCheck: -1,
+      stepNumber: 0,
+      history: [
+        {
+          squares: Array(400).fill(null)
         }
+      ],
+      pattern: {},
+      messages: []
+    });
+  };
 
-        const moves = history.map((step, move) => {
-            const desc = move ?
-                'Bước ' + move + ' ' + new Date().toLocaleTimeString() :
-                'Bước bắt đầu chơi';
-            return (
-                <li key={move}>
-                    <button onClick={() => this.jumpTo(move)} className={stepNumber === move ? "active" : ""}>{desc}</button>
-                </li>
-            );
-        });
-        const movesSort = isSort ? moves : moves.reverse();
+  render() {
+    const {
+      history,
+      stepNumber,
+      isDisable,
+      indexCheck,
+      ID,
+      isPlaying,
+      loading,
+      pattern
+    } = this.state;
 
-        let status;
+    let user = {};
+    if (this.props.account) {
+      user = this.props.account.user;
+    }
 
-        if (nonBlock) {
-            // status =(!isDisable ? 'Bạn đã thắng' : 'Đối thủ thắng');
-            this.socket.emit("WIN",{ID})
-            // handleFunction.styleWinner(i, squares);
-        } else {
-            status = (!isDisable ? 'Tới lượt bạn' : 'Tới lượt đối thủ');
-        }
+    const current = history[stepNumber];
+    const squares = current.squares;
+    const i = indexCheck;
+    const winner = handleFunction.calculateWinner(i, squares);
 
-        return (
-            <div>
-                <Header />
-                <Button type="primary" onClick={this.findPlayer} icon="redo" hidden={this.state.loading}>
+    let nonBlock = null;
+
+    if (winner) {
+      nonBlock = handleFunction.checkBlock(i, squares);
+    }
+
+    let status;
+
+    if (nonBlock) {
+      this.socket.emit('WIN', { ID });
+    } else {
+      status = !isDisable ? 'Tới lượt bạn' : 'Tới lượt đối thủ';
+    
+    }
+    return (
+      <div>
+        <div className="game">
+          <div className="game-body">
+            <div className="game-info">
+              <div className="info-user">
+                <Avatar src={user.avatar} size={96} shape="circle" />
+                <div className="info">
+                  <span>{user.displayName}</span>
+                  <span>{user.birthday ? user.birthday : null}</span>
+                  <span>
+                    {' '}
+                    {user.gender
+                      ? user.gender === 'female'
+                        ? 'Nữ'
+                        : 'Name'
+                      : null}
+                  </span>
+                </div>
+              </div>
+              <div className="game-group-button">
+                <div className="status" style={{ color: '#ffff00' }}>
+                  {status}
+                </div>
+                <div className="group-button">
+                  <Button
+                    type="primary"
+                    disabled={isPlaying}
+                    loading={loading}
+                    onClick={this.findPlayer}
+                  >
                     Tìm người chơi
-                          </Button>
-                {
-                    this.state.loading ?
-                        <Spin tip="Đang tìm người chơi..." size="large" style={{ color: "fff" }} >
-                        </Spin> :
-                        <div className="game">
-                            <div className="game-body">
-                                <div className="game-chat">
-                                    <div className="title">
-                                        <span style={{ color: '#ffff00' }}>Nhắn tin với người chơi</span>
-                                    </div>
-                                    <div className="content">
-                                        <div className="group-message">
-                                            {this.state.messages.map(message => {
-                                                return (
-                                                    <div>{message.author}: {message.message}</div>
-                                                )
-                                            })}
-                                        </div>
-                                        <div className="group-button">
-                                            <Input placeholder="Nhập nội dung tin nhắn..."
-                                                value={this.state.message}
-                                                onChange={ev => this.setState({ message: ev.target.value })}
-                                                onPressEnter={this.sendMessage} />
-                                            <Button type="primary" onClick={this.sendMessage}>Gửi</Button>
-                                        </div>
-                                    </div>
-                                </div> 
-                                <div className="game-board">
-                                    <div className="status" style={{ color: '#ffff00' }}>{status}</div>
-                                    <div className="play-again" >
-                                        <button onClick={() => this.handleClickReset()}>
-                                            Chơi lại
-                                </button>
-                                    </div>
-                                    <Board
-                                        squares={current.squares}
-                                        onClick={(i) => this.handleClick(i)}
-                                        disable={isDisable}
-                                        indexCheck={i}
-                                    />
-                                </div>
-                                <div className="game-history">
-                                    <div className="sort-icon">
-                                        <span style={{ color: '#ffff00' }}>Lịch sử bước đi</span>
-                                        <button className="icon" onClick={() => this.handleSort()}>
-                                            <img src={this.state.isSort ? sortASC : sortDESC} alt=""></img>
-                                        </button>
-                                    </div>
-                                    <div className="game-info">
-                                        <div className="move">
-                                            <ol>{movesSort}</ol>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                  </Button>
+                  <Button type="primary" disabled={!isPlaying}>
+                    Xin hòa
+                  </Button>
+                  <Button type="primary" disabled={!isPlaying}>
+                    Đầu hàng
+                  </Button>
+                  <Button type="primary" disabled={!isPlaying}>
+                    Quay lại bước đi
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="game-board">
+              <Board
+                squares={current.squares}
+                onClick={i => this.handleClick(i)}
+                disable={isDisable}
+                indexCheck={i}
+              />
+            </div>
+            <div className="game-chat">
+              <div className="content">
+                {pattern ? (
+                  <div
+                    className="info-user"
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    <Avatar src={pattern.avatar} size={32} shape="circle" />
+                    <div className="info">
+                      <span>{pattern.displayName}</span>
+                    </div>
+                  </div>
+                ) : null}
+                <div className="group-message">
+                  {this.state.messages.map((message, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className={message.isSending ? 'sending' : 'send'}
+                        style={{ display: 'flex' }}
+                      >
+                        <Avatar src={message.avatar} size={32} shape="circle" />
+                        <div>
+                          <span>{message.message}</span>
                         </div>
-                }
-            </div >
-        );
-    }
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="group-button">
+                  <Input
+                    placeholder="Nhập nội dung tin nhắn..."
+                    value={this.state.message}
+                    onChange={ev => this.setState({ message: ev.target.value })}
+                    onPressEnter={this.sendMessage}
+                  />
+                  <Button type="primary" onClick={this.sendMessage}>
+                    Gửi
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        )}
+        <Modal
+          title="Kết thúc game"
+          visible={this.state.visibleWin}
+          onCancel={this.handleCancelWin}
+          onOk={this.handleOKWin}
+          footer={[
+            <Button key="back" onClick={this.handleCancelWin}>
+              Đóng
+            </Button>,
+            <Button key="submit" onClick={this.handleOKWin}>
+              Chơi lại
+            </Button>
+          ]}
+        >
+          Xin chúc mừng, bạn đã thắng
+        </Modal>
+        <Modal
+          title="Kết thúc game"
+          visible={this.state.visibleLost}
+          onCancel={this.handleCancelLost}
+          onOk={this.handleOKLost}
+          footer={[
+            <Button key="back" onClick={this.handleCancelLost}>
+              Đóng
+            </Button>,
+            <Button key="submit" onClick={this.handleOKLost}>
+              Chơi lại
+            </Button>
+          ]}
+        >
+          Xin chia buồn, bạn đã thua
+        </Modal>
+      </div>
+    );
+  }
 }
 
-const mapStateToProps = (state) => ({
-    account: state.login.account
-})
+const mapStateToProps = state => {
+  return {
+    account: state.getInfomation.account
+  };
+};
 
-export default connect(mapStateToProps)(GameOnline)
+const mapDispatchToProps = dispatch => ({
+  getInfomation: () => dispatch(InfomationAction.getInfomation())
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(GameOnline);

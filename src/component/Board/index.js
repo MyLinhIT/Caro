@@ -2,7 +2,6 @@ import React from 'react';
 import Square from '../Square/index';
 export default class Board extends React.Component {
     renderSquare(i) {
-        console.log(this.props.indexCheck)
         return (
             <Square
                 value={this.props.squares[i]}

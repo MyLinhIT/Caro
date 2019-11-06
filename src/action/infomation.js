@@ -1,12 +1,12 @@
 
-import { LOCAL_API, GET_INFOMATION_SUCESS, GET_INFOMATION_FAILURE, GET_INFOMATION_PENDING } from './../contant/index';
+import { API, GET_INFOMATION_SUCESS, GET_INFOMATION_FAILURE, GET_INFOMATION_PENDING } from './../contant/index';
 import axios from 'axios';
 import { message } from 'antd';
 
 export const getInfomation = () => {
     return dispatch => {
         axios
-            .get(`${LOCAL_API}/me`, { headers: { "Authorization": `Token ${localStorage.getItem('jwt_token')}` } })
+            .get(`${API}/me`, { headers: { "Authorization": `Token ${localStorage.getItem('jwt_token')}` } })
             .then(res => {
                 dispatch(GetInfomationSucess(res.data));
             })
@@ -22,7 +22,7 @@ export const updateInfomation = ({ email, displayName, _id, birthday, gender, av
     return dispatch => {
         dispatch(GetInfomationPending());
         axios
-            .post(`${LOCAL_API}/update?_id=${_id}`, {
+            .post(`${API}/update?_id=${_id}`, {
                 email,
                 displayName,
                 birthday,
