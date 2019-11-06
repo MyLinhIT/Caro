@@ -2,11 +2,12 @@ import './style.scss';
 
 import React from 'react';
 import io from 'socket.io-client';
-import { message, Button, Input, Avatar, Modal } from 'antd';
+import { message, Button, Input, Avatar } from 'antd';
 import Board from '../../component/Board';
 import { connect } from 'react-redux';
 import * as handleFunction from '../../Helper/handleFunction';
 import * as InfomationAction from '../../action/infomation';
+import Modal from '../../component/Modal';
 
 class GameOnline extends React.Component {
   constructor(props) {
@@ -379,7 +380,7 @@ class GameOnline extends React.Component {
     const current = history[stepNumber];
     const squares = current.squares;
 
-    const checkNull = squares.every(item => item === null)
+    const checkNull = squares.every(item => item === null);
 
     const i = indexCheck;
     const winner = handleFunction.calculateWinner(i, squares);
@@ -500,6 +501,13 @@ class GameOnline extends React.Component {
         </div>
         )}
         <Modal
+          content={'Xin chúc mừng, bạn đã thắng. Bạn có muốn chơi lại không?'}
+          title="Kết thúc game"
+          visible={this.state.visibleWin}
+          onCancel={this.handleCancelWin}
+          onOk={this.handleOKWin}
+        />
+        {/* <Modal
           title="Kết thúc game"
           visible={this.state.visibleWin}
           onCancel={this.handleCancelWin}
@@ -514,39 +522,21 @@ class GameOnline extends React.Component {
           ]}
         >
           Xin chúc mừng, bạn đã thắng
-        </Modal>
+        </Modal> */}
         <Modal
           title="Kết thúc game"
           visible={this.state.visibleLost}
           onCancel={this.handleCancelLost}
           onOk={this.handleOKLost}
-          footer={[
-            <Button key="back" onClick={this.handleCancelLost}>
-              Đóng
-            </Button>,
-            <Button key="submit" onClick={this.handleOKLost}>
-              Chơi lại
-            </Button>
-          ]}
-        >
-          Xin chia buồn, bạn đã thua
-        </Modal>
+          content="Xin chia buồn, bạn đã thua. Bạn có muốn chơi lại?"
+        />
         <Modal
           title="Quay lại bước đi"
           visible={this.state.visibleUndo}
           onCancel={this.handleCancelUndo}
           onOk={this.handleOKUndo}
-          footer={[
-            <Button key="back" onClick={this.handleCancelUndo}>
-              Không
-            </Button>,
-            <Button key="submit" onClick={this.handleOKUndo}>
-              Có
-            </Button>
-          ]}
-        >
-         Bạn có muốn đối thủ quay lại bước đi?
-        </Modal>
+          content=" Bạn có muốn đối thủ quay lại bước đi?"
+        />
       </div>
     );
   }
