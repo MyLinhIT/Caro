@@ -31,6 +31,7 @@ class GameOnline extends React.Component {
       visibleWin: false,
       visibleLost: false,
       isRePlaying: false,
+      visibleSurrender: false,
       pattern: {}
     };
   }
@@ -84,6 +85,15 @@ class GameOnline extends React.Component {
           message.info('Rất tiếc, đối thủ bạn không chấp nhận.');
         }
       }
+    });
+
+    this.socket.on('SURRENDERED', data => {
+      if (this.state.ID !== data.ID) {
+        message.info('Đối thủ đã đầu hàng, bạn đã thắng.');
+      } else {
+        message.info('Bạn đã đầu hàng');
+      }
+      this.handleCancelWin();
     });
 
     const addMessage = data => {
@@ -360,6 +370,31 @@ class GameOnline extends React.Component {
     );
   };
 
+  showModalSurrender = () => {
+    this.setState({
+      visibleSurrender: true
+    });
+  };
+
+  handleOKSurrender = () => {
+    this.setState(
+      {
+        visibleSurrender: false
+      },
+      () => {
+        this.socket.emit('SURRENDER', {
+          ID: this.state.ID
+        });
+      }
+    );
+  };
+
+  handleCancelSurrender = e => {
+    this.setState({
+      visibleSurrender: false
+    });
+  };
+
   render() {
     const {
       history,
@@ -431,10 +466,14 @@ class GameOnline extends React.Component {
                   >
                     Tìm người chơi
                   </Button>
-                  <Button type="primary" disabled={!isPlaying}>
+                  <Button type="primary" disabled={!isPlaying || checkNull}>
                     Xin hòa
                   </Button>
-                  <Button type="primary" disabled={!isPlaying}>
+                  <Button
+                    type="primary"
+                    disabled={!isPlaying || checkNull}
+                    onClick={this.showModalSurrender}
+                  >
                     Đầu hàng
                   </Button>
                   <Button
@@ -507,22 +546,6 @@ class GameOnline extends React.Component {
           onCancel={this.handleCancelWin}
           onOk={this.handleOKWin}
         />
-        {/* <Modal
-          title="Kết thúc game"
-          visible={this.state.visibleWin}
-          onCancel={this.handleCancelWin}
-          onOk={this.handleOKWin}
-          footer={[
-            <Button key="back" onClick={this.handleCancelWin}>
-              Đóng
-            </Button>,
-            <Button key="submit" onClick={this.handleOKWin}>
-              Chơi lại
-            </Button>
-          ]}
-        >
-          Xin chúc mừng, bạn đã thắng
-        </Modal> */}
         <Modal
           title="Kết thúc game"
           visible={this.state.visibleLost}
@@ -536,6 +559,13 @@ class GameOnline extends React.Component {
           onCancel={this.handleCancelUndo}
           onOk={this.handleOKUndo}
           content=" Bạn có muốn đối thủ quay lại bước đi?"
+        />
+         <Modal
+          content={'Bạn muốn đầu hàng'}
+          title="Đầu hàng"
+          visible={this.state.visibleSurrender}
+          onCancel={this.handleCancelSurrender}
+          onOk={this.handleOKSurrender}
         />
       </div>
     );
